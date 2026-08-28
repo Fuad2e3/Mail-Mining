@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded
+    // into. GitHub Pages serves static files with no way to set the
+    // X-Frame-Options header, and CSP's frame-ancestors directive is not
+    // honored via <meta> — so this JS-level guard is the only defense
+    // available on this hosting platform.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script src="assets/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#070913" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F0F4F8" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>Sign In & Register — EmailFinder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    :root {
+      --color-strength-weak: #ff4757;
+      --color-strength-medium: #ffa502;
+      --color-strength-strong: #2ed573;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: var(--bg-app);
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      padding: 15px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated Background */
+    .bg-blobs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      opacity: 0.12;
+      filter: blur(60px);
+      animation: move 20s infinite alternate linear;
+      will-change: transform;
+    }
+
+    .blob-1 {
+      top: -100px;
+      left: -100px;
+      background: var(--color-primary);
+    }
+
+    .blob-2 {
+      bottom: -100px;
+      right: -100px;
+      background: var(--color-accent);
+      animation-delay: -5s;
+    }
+
+    @keyframes move {
+      from {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+
+      to {
+        transform: translate3d(80px, 80px, 0) scale(1.1);
+      }
+    }
+
+    .login-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      max-width: 900px;
+      height: 540px;
+      /* Fixed height to keep it consistent */
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-glass);
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Left Column */
+    .info-side {
+      padding: 40px;
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(0, 210, 255, 0.05));
+      border-right: 1px solid var(--border-input);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 25px;
+    }
+
+    .logo-box {
+      width: 45px;
+      height: 45px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .logo-text h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin: 0;
+    }
+
+    .headline {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-heading);
+      margin-bottom: 12px;
+    }
+
+    .sub-headline {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .feature-icon {
+      color: var(--color-primary);
+      font-size: 18px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .feature-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin: 0;
+    }
+
+    /* Right Column */
+    .form-side {
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* This centers the form contents vertically */
+    }
+
+    .tab-nav {
+      display: flex;
+      background: var(--bg-input);
+      border-radius: 30px;
+      padding: 4px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      border-radius: 25px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .form-side h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-heading);
+      margin: 0 0 8px 0;
+    }
+
+    .welcome-msg {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .social-logins {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .social-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-main);
+      font-size: 18px;
+    }
+
+    .social-btn:hover {
+      border-color: var(--color-primary);
+      background: var(--bg-input-focus);
+      transform: translateY(-2px);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 18px;
+    }
+
+    .divider span {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      height: 1px;
+      background: var(--border-input);
+      flex: 1;
+    }
+
+    /* Floating Labels */
+    .floating-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .floating-group input {
+      width: 100%;
+      padding: 14px 16px 14px 42px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 14px;
+      transition: var(--transition-fast);
+    }
+
+    .floating-group label {
+      position: absolute;
+      left: 42px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: all 0.2s ease;
+      font-size: 13px;
+    }
+
+    .floating-group i.main-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-primary);
+      font-size: 14px;
+    }
+
+    .floating-group input:focus~label,
+    .floating-group input:not(:placeholder-shown)~label {
+      top: -8px;
+      left: 10px;
+      font-size: 11px;
+      color: var(--color-primary);
+      background: var(--bg-card);
+      padding: 0 6px;
+      transform: translateY(0);
+    }
+
+    .floating-group input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 15px rgba(108, 99, 255, 0.1);
+    }
+
+    .eye-icon {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 4px;
+    }
+
+    .eye-icon:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Remember Me / Forgot Password row */
+    .login-options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: -6px 0 18px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .remember-me-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .remember-me-label input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--color-primary);
+      cursor: pointer;
+    }
+
+    .forgot-password-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .forgot-password-link:hover {
+      text-decoration: underline;
+    }
+
+    .back-to-signin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      font-size: 13px;
+    }
+
+    /* Strength Meter */
+    .strength-meter {
+      position: absolute;
+      width: 100%;
+      height: 3px;
+      background: var(--border-input);
+      bottom: -8px;
+      border-radius: 2px;
+      overflow: hidden;
+      display: none;
+    }
+
+    .strength-bar {
+      height: 100%;
+      width: 0;
+      transition: all 0.3s ease;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: var(--transition-fast);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+    }
+
+    /* Shake Animation */
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-8px);
+      }
+
+      75% {
+        transform: translateX(8px);
+      }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .btn-submit.is-loading .spinner {
+      display: inline-block;
+    }
+
+    .btn-submit.is-loading span,
+    .btn-submit.is-loading i {
+      display: none;
+    }
+
+    /* ── Floating Nav Buttons (Home / Theme Toggle) — Professional Polish */
+    .floating-nav-btn {
+      position: fixed;
+      top: 20px;
+      z-index: 1000;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-glass);
+      transition: all 0.2s;
+    }
+
+    #btn-back-home {
+      left: 20px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    #btn-theme {
+      right: 20px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .api-status-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-input);
+      padding: 5px 12px;
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .ssl-secured-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .ssl-secured-badge i {
+      color: #22c55e;
+      font-size: 13px;
+      filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.4));
+    }
+
+    /* 🛡️ Human Verification (SSL Secured) Component */
+    .human-verify-card {
+      margin: 16px 0 18px;
+      padding: 12px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 12px;
+      transition: all 0.25s ease;
+    }
+
+    .human-verify-card:hover {
+      border-color: var(--border-focus);
+    }
+
+    .human-verify-card.error-shake {
+      animation: verifyShake 0.4s ease;
+      border-color: #ff4757 !important;
+      box-shadow: 0 0 12px rgba(255, 71, 87, 0.25);
+    }
+
+    @keyframes verifyShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .human-verify-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .human-verify-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-heading);
+      letter-spacing: 0.1px;
+    }
+
+    .human-verify-title i {
+      color: #10b981;
+      font-size: 14px;
+    }
+
+    .ssl-verify-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    .ssl-verify-pill i {
+      font-size: 10px;
+    }
+
+    .recaptcha-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-input);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .recaptcha-box:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.04);
+    }
+
+    .recaptcha-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .recaptcha-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(255, 255, 255, 0.45);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="light"] .recaptcha-checkbox {
+      border: 2.5px solid #94a3b8;
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+
+    .recaptcha-box:hover .recaptcha-checkbox {
+      border-color: #6366f1;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+      transform: scale(1.05);
+    }
+
+    .recaptcha-box.verifying .recaptcha-checkbox {
+      border: 3px solid #6366f1;
+      border-top-color: transparent;
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: none;
+      animation: spinVerify 0.6s linear infinite;
+    }
+
+    @keyframes spinVerify {
+      to { transform: rotate(360deg); }
+    }
+
+    .recaptcha-box.verified .recaptcha-checkbox {
+      background: #10b981 !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.6) !important;
+      transform: scale(1);
+    }
+
+    .recaptcha-checkbox i {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 900;
+      display: none;
+    }
+
+    .recaptcha-box.verified .recaptcha-checkbox i {
+      display: block;
+      animation: checkPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+
+    .recaptcha-label {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-heading);
+    }
+
+    .recaptcha-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      opacity: 0.85;
+    }
+
+    .recaptcha-logo-icon {
+      font-size: 18px;
+    }
+
+    .recaptcha-subtext {
+      font-size: 9px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    .verify-footer-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .verify-footer-note i {
+      color: #10b981;
+      font-size: 12px;
+    }
+
+    @media (max-width: 850px) {
+      body {
+        overflow-y: auto;
+        align-items: center;
+        padding: 70px 16px 30px;
+      }
+
+      .login-wrapper {
+        grid-template-columns: 1fr;
+        height: auto;
+        max-height: none;
+        max-width: 480px;
+      }
+
+      .info-side {
+        display: none;
+      }
+
+      .form-side {
+        padding: 32px 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 65px 12px 24px;
+      }
+
+      .form-side {
+        padding: 24px 16px;
+      }
+
+      .form-side h2 {
+        font-size: 20px;
+      }
+
+      #btn-back-home {
+        top: 14px;
+        left: 14px;
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      #btn-theme {
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" id="btn-back-home" class="floating-nav-btn" title="Back to Home">
+    <i class="fa-solid fa-arrow-left"></i> <span>Home</span>
+  </a>
+  <button id="btn-theme" class="floating-nav-btn" title="Toggle Light/Dark Theme"><i
+      class="fa-solid fa-moon"></i></button>
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <!-- Left Column -->
+    <div class="info-side">
+      <div class="logo-area">
+        <div class="logo-box"><i class="fa-solid fa-at"></i></div>
+        <div class="logo-text">
+          <h1>EmailFinder</h1>
+        </div>
+      </div>
+      <h2 class="headline">Find Verified Emails in Seconds</h2>
+      <p class="sub-headline">The ultimate suite for professional email pattern discovery and instant verification.</p>
+      <div class="features-list">
+        <div class="feature-item">
+          <i class="fa-solid fa-bolt feature-icon"></i>
+          <div class="feature-text">
+            <h4>15x Multi-Thread Mining</h4>
+          </div>
+        </div>
+        <div class="feature-item">
+          <i class="fa-solid fa-shield-halved feature-icon"></i>
+          <div class="feature-text">
+            <h4>Anti-Bot Protection</h4>
+          </div>
+        </div>
+        <div class="feature-item">
+          <i class="fa-solid fa-file-export feature-icon"></i>
+          <div class="feature-text">
+            <h4>Multi-Format Smart Export</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="form-side">
+      <div class="tab-nav">
+        <button id="signin-tab" class="tab-btn active">Sign In</button>
+        <button id="signup-tab" class="tab-btn">Create Account</button>
+      </div>
+
+      <div id="signin-section">
+        <h2>Welcome Back</h2>
+        <p class="welcome-msg" style="margin-bottom: 25px;">Enter your credentials to access your dashboard.</p>
+        <form id="login-form">
+          <div class="floating-group">
+            <i class="fa-solid fa-at main-icon"></i>
+            <input type="email" id="email" placeholder=" " required>
+            <label>Work Email</label>
+          </div>
+          <div class="floating-group">
+            <i class="fa-solid fa-key main-icon"></i>
+            <input type="password" id="password" placeholder=" " required>
+            <label>Password</label>
+            <i class="fa-solid fa-eye eye-icon" role="button" tabindex="0" aria-label="Show password"></i>
+          </div>
+          <div class="login-options-row">
+            <label class="remember-me-label">
+              <input type="checkbox" id="remember-me" checked>
+              <span>Remember Me</span>
+            </label>
+            <a href="#" id="forgot-password-link" class="forgot-password-link">Forgot Password?</a>
+          </div>
+
+          <!-- 🛡️ Human Verification -->
+          <div class="human-verify-card" id="human-verify-card">
+            <div class="human-verify-header">
+              <div class="human-verify-title">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Human Verification</span>
+              </div>
+            </div>
+
+            <div class="recaptcha-box" id="recaptcha-box" role="checkbox" aria-checked="false" tabindex="0">
+              <div class="recaptcha-left">
+                <div class="recaptcha-checkbox" id="recaptcha-checkbox">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="recaptcha-label" id="recaptcha-label">I'm not a robot</span>
+              </div>
+              <div class="recaptcha-right">
+                <i class="fa-brands fa-cloudflare recaptcha-logo-icon" style="color:#f38020;"></i>
+                <span class="recaptcha-subtext">Security Cloud</span>
+              </div>
+            </div>
+
+            <div class="verify-footer-note">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>Security verification to safeguard your account</span>
+            </div>
+          </div>
+
+          <input type="text" name="b_trap" class="bot-trap" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+          <button type="submit" class="btn-submit">
+            <div class="spinner"></div>
+            <i class="fa-solid fa-right-to-bracket"></i> <span>Sign In</span>
+          </button>
+        </form>
+      </div>
+
+      <div id="forgot-section" style="display: none;">
+        <h2>Reset Password</h2>
+        <p class="welcome-msg" style="margin-bottom: 25px;">Enter your account email and we'll send you a link to reset your password.</p>
+        <form id="forgot-form">
+          <div class="floating-group">
+            <i class="fa-solid fa-at main-icon"></i>
+            <input type="email" id="forgot-email" placeholder=" " required>
+            <label>Work Email</label>
+          </div>
+          <button type="submit" class="btn-submit">
+            <div class="spinner"></div>
+            <i class="fa-solid fa-paper-plane"></i> <span>Send Reset Link</span>
+          </button>
+        </form>
+        <a href="#" id="back-to-signin-link" class="forgot-password-link back-to-signin-link"><i class="fa-solid fa-arrow-left"></i> Back to Sign In</a>
+      </div>
+
+      <div id="signup-section" style="display: none;">
+        <h2>Create Account</h2>
+        <p class="welcome-msg" style="margin-bottom: 25px;">Join 5,000+ businesses mining leads today.</p>
+
+        <form id="signup-form">
+          <input type="text" name="b_trap" class="bot-trap" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;opacity:0;pointer-events:none;" aria-hidden="true">
+          <div class="floating-group">
+            <i class="fa-solid fa-user main-icon"></i>
+            <input type="text" id="reg-name" placeholder=" " required>
+            <label>Full Name</label>
+          </div>
+          <div class="floating-group">
+            <i class="fa-solid fa-at main-icon"></i>
+            <input type="email" id="reg-email" placeholder=" " required>
+            <label>Work Email</label>
+          </div>
+          <div class="floating-group" style="position: relative;">
+            <i class="fa-solid fa-key main-icon"></i>
+            <input type="password" id="reg-password" placeholder=" " minlength="8" required>
+            <label>Password</label>
+            <i class="fa-solid fa-eye eye-icon" role="button" tabindex="0" aria-label="Show password"></i>
+            <div class="strength-meter" id="strength-meter">
+              <div class="strength-bar" id="strength-bar"></div>
+            </div>
+          </div>
+          <div class="floating-group">
+            <i class="fa-solid fa-key main-icon"></i>
+            <input type="password" id="reg-confirm-password" placeholder=" " required>
+            <label>Confirm Password</label>
+            <i class="fa-solid fa-eye eye-icon" role="button" tabindex="0" aria-label="Show password"></i>
+          </div>
+          <button type="submit" class="btn-submit">
+            <div class="spinner"></div>
+            <i class="fa-solid fa-user-plus"></i> <span>Create Account</span>
+          </button>
+        </form>
+      </div>
+
+      <div style="display: none; margin-top: 15px; text-align: center;">
+        <button id="btn-api-config" class="api-status-pill">
+          <i class="fa-solid fa-server" style="color: var(--color-primary);"></i> <span id="api-status-label">Backend
+            API Server Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    if (localStorage.getItem('lgs_auth') === 'true' || sessionStorage.getItem('lgs_auth') === 'true') { window.location.href = 'dashboard.html'; }
+
+    const signinTab = document.getElementById('signin-tab');
+    const signupTab = document.getElementById('signup-tab');
+    const signinSection = document.getElementById('signin-section');
+    const signupSection = document.getElementById('signup-section');
+    const forgotSection = document.getElementById('forgot-section');
+    const tabNav = document.querySelector('.tab-nav');
+    const wrapper = document.querySelector('.login-wrapper');
+
+    signinTab.onclick = () => {
+      signinTab.classList.add('active'); signupTab.classList.remove('active');
+      signinSection.style.display = 'block'; signupSection.style.display = 'none';
+      forgotSection.style.display = 'none';
+    };
+    signupTab.onclick = () => {
+      signupTab.classList.add('active'); signinTab.classList.remove('active');
+      signupSection.style.display = 'block'; signinSection.style.display = 'none';
+      forgotSection.style.display = 'none';
+    };
+
+    const initialParams = new URLSearchParams(window.location.search);
+    if (initialParams.get('tab') === 'signup' || initialParams.get('tab') === 'register' || initialParams.get('action') === 'signup') {
+      signupTab.click();
+    }
+
+    // ── Forgot Password flow ────────────────────────────────────────────────
+    document.getElementById('forgot-password-link').onclick = (e) => {
+      e.preventDefault();
+      tabNav.style.display = 'none';
+      signinSection.style.display = 'none';
+      forgotSection.style.display = 'block';
+    };
+    document.getElementById('back-to-signin-link').onclick = (e) => {
+      e.preventDefault();
+      forgotSection.style.display = 'none';
+      tabNav.style.display = 'flex';
+      signinTab.click();
+    };
+
+    // ── Server URL Config ────────────────────────────────────────────────────
+    function getApiHost() {
+      const custom = (localStorage.getItem('lgs_api_url') || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
+      if (custom) return custom;
+      const globalCfg = (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') : '';
+      if (globalCfg) return globalCfg;
+      const h = window.location.hostname;
+      const isLocal = h === 'localhost' || h === '127.0.0.1';
+      const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(h);
+      if (isLocal) return 'http://localhost:3000';
+      if (isIp) return `http://${h}:3000`;
+      if (h.endsWith('github.io') || h.endsWith('netlify.app') || h.endsWith('vercel.app')) {
+        // Dynamically read from config.js — no hardcoded URL
+        return (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '') : 'http://localhost:3000';
+      }
+      return (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? ((window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || 'http://localhost:3000') : window.location.origin;
+    }
+    window.getApiHost = getApiHost;
+    const API_HOST = getApiHost();
+    const API_BASE = `${API_HOST}/api/auth`;
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // API Server Config Modal Trigger & Server Status Monitor
+    document.addEventListener('DOMContentLoaded', () => {
+      const btnApi = document.getElementById('btn-api-config');
+      const labelApi = document.getElementById('api-status-label');
+
+      // Check if redirected due to server shutdown
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('reason') === 'server_offline') {
+        showError('⛔ Server is OFF!');
+      }
+
+      // Live Server Ping Checker
+      async function pingServerStatus() {
+        if (!labelApi) return;
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 3000);
+          const res = await fetch(`${API_HOST}/health`, { signal: controller.signal });
+          clearTimeout(timer);
+          if (res.ok) {
+            labelApi.innerHTML = `<span style="color:#22c55e;">●</span> Server Online (${API_HOST.replace(/^https?:\/\//i, '')})`;
+          } else {
+            labelApi.innerHTML = `<span style="color:#ef4444;">●</span> Server Offline`;
+          }
+        } catch (_) {
+          labelApi.innerHTML = `<span style="color:#ef4444;">●</span> Server Offline`;
+        }
+      }
+
+      pingServerStatus();
+      setInterval(pingServerStatus, 5000);
+
+      if (btnApi) {
+        btnApi.onclick = () => {
+          const current = localStorage.getItem('lgs_api_url') || (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || API_HOST;
+          const updated = prompt('Enter your Backend API / Tunnel URL:\n(e.g., https://swift-lion-45.loca.lt or https://xxx.trycloudflare.com)', current);
+          if (updated !== null) {
+            const cleanUrl = updated.trim().replace(/\/+$/, '').replace(/\/api$/, '');
+            if (cleanUrl) {
+              localStorage.setItem('lgs_api_url', cleanUrl);
+              alert(`API Server URL saved successfully:\n${cleanUrl}\n\nThe page will now refresh.`);
+            } else {
+              localStorage.removeItem('lgs_api_url');
+              alert('Reset to default API URL. The page will now refresh.');
+            }
+            window.location.reload();
+          }
+        };
+      }
+    });
+
+
+    // Error message helper
+    function showError(msg, isSuccess = false, type = 'error') {
+      let el = document.getElementById('login-error-msg');
+      if (!el) {
+        el = document.createElement('p');
+        el.id = 'login-error-msg';
+        el.style.cssText = 'font-size:13px;margin:10px 0 0;text-align:center;font-weight:600;padding:8px 12px;border-radius:6px;';
+        document.getElementById('login-form').appendChild(el);
+      }
+      // msg may come from a backend API response, so it's written via
+      // textContent (never innerHTML) to avoid any HTML/script injection —
+      // only the icon markup below is trusted, fixed internal HTML.
+      if (type === 'pending') {
+        el.style.color = '#f59e0b';
+        el.style.background = 'rgba(245,158,11,0.12)';
+        el.style.border = '1px solid rgba(245,158,11,0.3)';
+        el.innerHTML = `<i class="fa-solid fa-clock"></i> <span></span>`;
+      } else if (isSuccess) {
+        el.style.color = '#2ed573';
+        el.style.background = 'rgba(46,213,115,0.1)';
+        el.style.border = '1px solid rgba(46,213,115,0.3)';
+        el.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span></span>`;
+      } else {
+        el.style.color = '#ff4757';
+        el.style.background = 'rgba(255,71,87,0.1)';
+        el.style.border = '1px solid rgba(255,71,87,0.3)';
+        el.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span></span>`;
+      }
+      el.querySelector('span').textContent = msg;
+    }
+    function clearError() {
+      const el = document.getElementById('login-error-msg');
+      if (el) {
+        el.textContent = '';
+        el.style.background = 'transparent';
+        el.style.border = 'none';
+      }
+    }
+
+    // ── Human Verification Interactive Handler ─────────────────────────────
+    let isHumanVerified = false;
+    const recaptchaBox = document.getElementById('recaptcha-box');
+    const humanVerifyCard = document.getElementById('human-verify-card');
+    const recaptchaLabel = document.getElementById('recaptcha-label');
+
+    if (recaptchaBox) {
+      function triggerVerification() {
+        if (isHumanVerified || recaptchaBox.classList.contains('verifying')) return;
+        recaptchaBox.classList.add('verifying');
+        recaptchaLabel.textContent = 'Verifying...';
+
+        setTimeout(() => {
+          recaptchaBox.classList.remove('verifying');
+          recaptchaBox.classList.add('verified');
+          recaptchaBox.setAttribute('aria-checked', 'true');
+          recaptchaLabel.textContent = "I'm not a robot";
+          isHumanVerified = true;
+          if (humanVerifyCard) humanVerifyCard.classList.remove('error-shake');
+          clearError();
+        }, 550);
+      }
+
+      recaptchaBox.addEventListener('click', triggerVerification);
+      recaptchaBox.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerVerification();
+        }
+      });
+    }
+
+    // ── LOGIN FORM
+    document.getElementById('login-form').onsubmit = async function (e) {
+      e.preventDefault();
+      clearError();
+      if (this.querySelector('.bot-trap')?.value) { return; }
+
+      const email = (document.getElementById('email').value || '').trim().toLowerCase();
+      const password = (document.getElementById('password').value || '');
+
+      if (!email || !password) {
+        showError('Please enter your email and password.');
+        return;
+      }
+
+      // Enforce Human Verification
+      if (!isHumanVerified) {
+        if (humanVerifyCard) {
+          humanVerifyCard.classList.add('error-shake');
+          setTimeout(() => humanVerifyCard.classList.remove('error-shake'), 450);
+        }
+        showError('Please check the "I\'m not a robot" box to verify you are human.');
+        return;
+      }
+
+      const btn = this.querySelector('.btn-submit');
+      btn.classList.add('is-loading');
+
+      const rememberMe = document.getElementById('remember-me') ? document.getElementById('remember-me').checked : true;
+
+      // Helper for successful login redirect
+      const completeLogin = (userObj, token) => {
+        // Remember Me checked -> persist in localStorage (survives browser restarts).
+        // Unchecked -> sessionStorage only (cleared when the browser/tab closes).
+        const store = rememberMe ? localStorage : sessionStorage;
+        // Clear the other storage first so stale state doesn't linger there.
+        (rememberMe ? sessionStorage : localStorage).removeItem('lgs_auth');
+        (rememberMe ? sessionStorage : localStorage).removeItem('lgs_session');
+        (rememberMe ? sessionStorage : localStorage).removeItem('lgs_token');
+        store.setItem('lgs_auth', 'true');
+        store.setItem('lgs_session', JSON.stringify(userObj));
+        if (token) store.setItem('lgs_token', token);
+        window.location.href = 'dashboard.html';
+      };
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000); // 10s timeout for mobile connections
+
+        const res = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        let data = null;
+        try { data = await res.json(); } catch (e) { }
+
+        if (res.ok && data && data.success) {
+          const userObj = data.user ? { fullname: data.user.name, email: data.user.email, id: data.user.id } : { fullname: email, email };
+          completeLogin(userObj, data.token);
+          return;
+        } else if (data) {
+          btn.classList.remove('is-loading');
+          if (data.status === 'pending' || (data.message && data.message.toLowerCase().includes('pending'))) {
+            showError(data.message || 'Your account is pending admin approval. Please wait for an administrator to activate your account.', false, 'pending');
+          } else {
+            showError(data.message || 'Invalid email or password. Please try again.');
+          }
+          wrapper.classList.add('shake');
+          setTimeout(() => wrapper.classList.remove('shake'), 500);
+          return;
+        }
+      } catch (err) {
+        console.warn('[Login Server Error] API fetch failed:', err);
+      }
+
+      btn.classList.remove('is-loading');
+      wrapper.classList.add('shake');
+      setTimeout(() => wrapper.classList.remove('shake'), 500);
+
+      // Check if API_HOST is unconfigured on GitHub Pages
+      if (window.location.hostname.endsWith('github.io') && API_HOST.includes('localhost')) {
+        showError('⛔ Server is OFF!');
+        return;
+      }
+
+      showError('⛔ Server is OFF!');
+      return;
+    };
+
+    // ── FORGOT PASSWORD FORM ────────────────────────────────────────────────
+    document.getElementById('forgot-form').onsubmit = async function (e) {
+      e.preventDefault();
+      const btn = this.querySelector('.btn-submit');
+      const email = (document.getElementById('forgot-email').value || '').trim().toLowerCase();
+      if (!email) return;
+
+      let msgEl = document.getElementById('forgot-msg');
+      if (!msgEl) {
+        msgEl = document.createElement('p');
+        msgEl.id = 'forgot-msg';
+        msgEl.style.cssText = 'font-size:13px;margin:10px 0 0;text-align:center;font-weight:600;padding:8px 12px;border-radius:6px;';
+        this.appendChild(msgEl);
+      }
+
+      btn.classList.add('is-loading');
+      let reachedServer = false;
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000);
+        await fetch(`${API_BASE}/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+        reachedServer = true;
+      } catch (err) {
+        console.warn('[Forgot Password] API fetch failed:', err);
+      }
+
+      btn.classList.remove('is-loading');
+
+      if (reachedServer) {
+        // Always shown as success regardless of whether the email exists, to
+        // avoid leaking which addresses are registered (standard reset-flow UX).
+        msgEl.style.color = '#2ed573';
+        msgEl.style.background = 'rgba(46,213,115,0.1)';
+        msgEl.style.border = '1px solid rgba(46,213,115,0.3)';
+        msgEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> If an account exists for that email, a reset link is on its way.';
+        this.reset();
+      } else {
+        msgEl.style.color = '#ff4757';
+        msgEl.style.background = 'rgba(255,71,87,0.1)';
+        msgEl.style.border = '1px solid rgba(255,71,87,0.3)';
+        msgEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Unable to reach the server. Please try again later.';
+      }
+    };
+
+    // ── SIGNUP FORM
+    document.getElementById('signup-form').onsubmit = async function (e) {
+      e.preventDefault();
+      clearError();
+      if (this.querySelector('.bot-trap')?.value) { return; }
+      const btn = this.querySelector('.btn-submit');
+      const name = (document.getElementById('reg-name').value || '').trim();
+      const email = (document.getElementById('reg-email').value || '').trim().toLowerCase();
+      const password = (document.getElementById('reg-password').value || '');
+      const confirmPassword = (document.getElementById('reg-confirm-password').value || '');
+
+      let errEl = document.getElementById('signup-error-msg');
+      if (!errEl) {
+        errEl = document.createElement('p');
+        errEl.id = 'signup-error-msg';
+        errEl.style.cssText = 'color:#ff4757;font-size:13px;margin:8px 0 0;text-align:center;font-weight:600;';
+        document.getElementById('signup-form').appendChild(errEl);
+      }
+      errEl.textContent = '';
+
+      let successEl = document.getElementById('signup-success-msg');
+      if (!successEl) {
+        successEl = document.createElement('p');
+        successEl.id = 'signup-success-msg';
+        successEl.style.cssText = 'color:#2ed573;font-size:13px;margin:8px 0 0;text-align:center;font-weight:600;background:rgba(46,213,115,0.1);padding:8px;border-radius:6px;border:1px solid rgba(46,213,115,0.3);';
+        document.getElementById('signup-form').appendChild(successEl);
+      }
+      successEl.innerHTML = '';
+
+      if (!name || !email || !password) {
+        errEl.textContent = 'Please fill in all fields.'; return;
+      }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        errEl.textContent = 'Please enter a valid email address.'; return;
+      }
+      if (password.length < 8) {
+        errEl.textContent = 'Password must be at least 8 characters.'; return;
+      }
+      if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+        errEl.textContent = 'Password must include at least one letter and one number.'; return;
+      }
+      if (password !== confirmPassword) {
+        errEl.textContent = 'Passwords do not match.'; return;
+      }
+
+      btn.classList.add('is-loading');
+
+      const handleSuccess = () => {
+        btn.classList.remove('is-loading');
+        document.getElementById('email').value = email;
+        successEl.innerHTML = '<i class="fa-solid fa-clock" style="color:#f59e0b;"></i> Registration submitted! Your account is pending Admin approval. Switching to Sign In...';
+        document.getElementById('signup-form').reset();
+
+        setTimeout(() => {
+          successEl.innerHTML = '';
+          signinTab.click();
+          showError('Registration submitted! Your account is pending admin approval. You will be able to log in once approved.', false, 'pending');
+        }, 1600);
+      };
+
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000); // 10s timeout for mobile connections
+
+        const res = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password }),
+          signal: controller.signal
+        });
+        clearTimeout(timer);
+
+        let data = null;
+        try { data = await res.json(); } catch (e) { }
+
+        if (res.ok && data && data.success) {
+          handleSuccess();
+          return;
+        } else if (data) {
+          btn.classList.remove('is-loading');
+          errEl.textContent = data.message || 'Registration failed!';
+          wrapper.classList.add('shake');
+          setTimeout(() => wrapper.classList.remove('shake'), 500);
+          return;
+        }
+      } catch (err) {
+        console.warn('[Signup Server Error] API fetch failed:', err);
+      }
+
+      btn.classList.remove('is-loading');
+      wrapper.classList.add('shake');
+      setTimeout(() => wrapper.classList.remove('shake'), 500);
+
+      // Check if API_HOST is unconfigured on GitHub Pages
+      if (window.location.hostname.endsWith('github.io') && API_HOST.includes('localhost')) {
+        errEl.textContent = '⛔ Server is OFF!';
+        return;
+      }
+
+      errEl.textContent = '⛔ Server is OFF!';
+      return;
+    };
+
+    document.getElementById('reg-password').oninput = function () {
+      const val = this.value;
+      const meter = document.getElementById('strength-meter');
+      const bar = document.getElementById('strength-bar');
+      if (val.length > 0) {
+        meter.style.display = 'block';
+        let s = 0; if (val.length > 5) s += 33; if (/[A-Z]/.test(val)) s += 33; if (/[0-9\W]/.test(val)) s += 34;
+        bar.style.width = s + '%';
+        bar.style.background = s <= 33 ? '#ff4757' : s <= 66 ? '#ffa502' : '#2ed573';
+      } else { meter.style.display = 'none'; }
+    };
+
+    document.querySelectorAll('.eye-icon').forEach(eye => {
+      const toggle = function () {
+        const input = eye.parentElement.querySelector('input');
+        if (input.type === 'password') {
+          input.type = 'text'; eye.classList.replace('fa-eye', 'fa-eye-slash');
+          eye.setAttribute('aria-label', 'Hide password');
+        } else {
+          input.type = 'password'; eye.classList.replace('fa-eye-slash', 'fa-eye');
+          eye.setAttribute('aria-label', 'Show password');
+        }
+      };
+      eye.onclick = toggle;
+      // Keyboard support: role="button"/tabindex on the <i> makes it
+      // focusable, but only a real <button> gets Enter/Space "click"
+      // behavior for free — wire both keys explicitly here.
+      eye.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+
+
+    // ── Theme System: OS Auto Sync on Load + Manual Toggle on Click ───────────
+    (function initThemeSystem() {
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btnTheme = document.getElementById('btn-theme');
+        if (!btnTheme) return;
+        if (theme === 'dark') {
+          btnTheme.innerHTML = '<i class="fa-solid fa-moon" style="color:#a78bfa;"></i>';
+          btnTheme.title = 'Dark Mode — Click for Light';
+          btnTheme.style.background = 'rgba(109,90,255,0.22)';
+          btnTheme.style.border = '1.5px solid rgba(167,139,250,0.6)';
+          btnTheme.style.color = '#a78bfa';
+          btnTheme.style.boxShadow = '0 0 14px rgba(109,90,255,0.45)';
+        } else {
+          btnTheme.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+          btnTheme.title = 'Light Mode — Click for Dark';
+          btnTheme.style.background = 'rgba(251,191,36,0.18)';
+          btnTheme.style.border = '1.5px solid rgba(251,191,36,0.7)';
+          btnTheme.style.color = '#f59e0b';
+          btnTheme.style.boxShadow = '0 0 14px rgba(251,191,36,0.4)';
+        }
+        btnTheme.style.cursor = 'pointer';
+        btnTheme.style.pointerEvents = 'auto';
+      }
+
+      // Page load: load saved preference or fall back to OS theme
+      const osTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      const currentTheme = localStorage.getItem('lgs_theme') || osTheme;
+      applyTheme(currentTheme);
+
+      // Live OS listener (only if user hasn't explicitly set a custom theme preference)
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const onOSChange = (e) => {
+          if (!localStorage.getItem('lgs_theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onOSChange);
+        else if (mq.addListener) mq.addListener(onOSChange);
+      }
+
+      // Button click: toggle Light ↔ Dark
+      const btnTheme = document.getElementById('btn-theme');
+      if (btnTheme) {
+        btnTheme.addEventListener('click', function () {
+          const current = document.documentElement.getAttribute('data-theme');
+          const next = (current === 'dark') ? 'light' : 'dark';
+          localStorage.setItem('lgs_theme', next);
+          applyTheme(next);
+        });
+      }
+    })();
+  </script>
+</body>
+
+</html>

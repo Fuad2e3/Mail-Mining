@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded
+    // into. GitHub Pages serves static files with no way to set the
+    // X-Frame-Options header, and CSP's frame-ancestors directive is not
+    // honored via <meta> — so this JS-level guard is the only defense
+    // available on this hosting platform.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#070913" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>Privacy Policy — EmailFinder</title>
+  <meta name="description" content="How EmailFinder collects, uses, and protects your information.">
+  <link rel="canonical" href="https://fuad2e3.github.io/Mail-Mining/privacy.html">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="assets/styles.css">
+
+  <style>
+    body {
+      display: block;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .policy-shell {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 100px 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .policy-header {
+      margin-bottom: 40px;
+    }
+
+    .policy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-accent);
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 5px 14px;
+      border-radius: var(--radius-full);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    .policy-header h1 {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .policy-updated {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .policy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
+      padding: 40px;
+      box-shadow: var(--shadow-glass);
+    }
+
+    .policy-card section {
+      margin-bottom: 32px;
+    }
+
+    .policy-card section:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-card h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .policy-card h2 i {
+      color: var(--color-primary-light);
+      font-size: 15px;
+    }
+
+    .policy-card p,
+    .policy-card li {
+      font-size: 14.5px;
+      line-height: 1.75;
+      color: var(--text-main);
+    }
+
+    .policy-card ul {
+      padding-left: 22px;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .policy-card strong {
+      color: var(--text-heading);
+    }
+
+    .policy-card a {
+      color: var(--color-primary-light);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .policy-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+    }
+
+    .policy-nav a {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: var(--transition-fast);
+    }
+
+    .policy-nav a:hover {
+      color: var(--color-primary-light);
+      border-color: var(--border-glow);
+    }
+
+    .floating-nav-btn {
+      position: fixed;
+      top: 20px;
+      z-index: 1000;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-glass);
+      transition: all 0.2s;
+    }
+
+    #btn-back-home {
+      left: 20px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    #btn-theme {
+      right: 20px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .policy-shell {
+        padding: 80px 16px 60px;
+      }
+
+      .policy-card {
+        padding: 26px 20px;
+      }
+
+      .policy-header h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <a href="index.html" id="btn-back-home" class="floating-nav-btn" title="Back to Home">
+    <i class="fa-solid fa-arrow-left"></i> <span>Home</span>
+  </a>
+  <button id="btn-theme" class="floating-nav-btn" title="Toggle Light/Dark Theme"><i class="fa-solid fa-moon"></i></button>
+
+  <div class="policy-shell">
+    <div class="policy-header">
+      <span class="policy-badge"><i class="fa-solid fa-shield-halved"></i> Legal</span>
+      <h1>Privacy Policy</h1>
+      <div class="policy-updated">Last updated: August 2026</div>
+    </div>
+
+    <div class="policy-card">
+      <section>
+        <h2><i class="fa-solid fa-circle-info"></i> Overview</h2>
+        <p>This Privacy Policy explains what information EmailFinder ("we", "us", "our") collects when you use
+          our website-intelligence and lead-mining tool (the "Service"), how we use it, and the choices you have.
+          By creating an account or using the Service, you agree to the practices described here.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-database"></i> Information We Collect</h2>
+        <ul>
+          <li><strong>Account information</strong> — your name, email address, and password (stored securely by
+            our backend; we do not store plaintext passwords in your browser) when you register.</li>
+          <li><strong>Submitted mining data</strong> — the website URLs, domains, and extraction parameters you
+            provide, along with the resulting extracted data (company names, public contact details, social
+            links, page content) generated by the Service on your behalf.</li>
+          <li><strong>Usage & device data</strong> — basic technical information such as browser type, theme
+            preference, and feature usage, used to operate and improve the Service.</li>
+          <li><strong>Local storage data</strong> — session tokens, theme preference, and cached UI state kept in
+            your browser's local storage so you stay signed in and don't lose your settings between visits.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-gears"></i> How We Use Information</h2>
+        <p>We use the information above to: provide and operate the Service (authenticate you, run mining
+          sessions, track your daily credit usage); maintain and improve reliability and performance; communicate
+          service-related notices (announcements, account status changes); and enforce our
+          <a href="terms.html">Terms of Service</a> and prevent abuse.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-share-nodes"></i> Data Sharing</h2>
+        <p>We do not sell your personal information. Extracted mining data and account information may pass
+          through third-party infrastructure strictly to operate the Service, for example CORS-proxy fallback
+          providers used to fetch publicly available website content, and export libraries (SheetJS, jsPDF) that
+          run entirely in your browser to generate your downloaded files. We do not share your account data with
+          advertisers.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-cookie"></i> Cookies & Local Storage</h2>
+        <p>We use browser local storage (not third-party tracking cookies) to keep you signed in, remember your
+          theme preference, and cache UI state. You can clear this at any time from your browser settings, which
+          will sign you out.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Data Retention</h2>
+        <p>We retain account and mining-session data for as long as your account is active, or as needed to
+          provide the Service. You may request deletion of your account and associated data at any time by
+          contacting us.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-user-shield"></i> Your Rights</h2>
+        <p>Depending on your location, you may have the right to access, correct, export, or delete your personal
+          information. To exercise any of these rights, contact us using the details below and we'll respond as
+          soon as reasonably possible.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-child-reaching"></i> Children's Privacy</h2>
+        <p>The Service is not directed at children under 16, and we do not knowingly collect personal information
+          from them.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-pen-to-square"></i> Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time. Material changes will be reflected by updating the
+          "Last updated" date above.</p>
+      </section>
+
+      <section>
+        <h2><i class="fa-solid fa-envelope"></i> Contact Us</h2>
+        <p>Questions about this policy? Reach out at
+          <a href="mailto:privacy@emailfinder.com">privacy@emailfinder.com</a>.</p>
+      </section>
+
+      <div class="policy-nav">
+        <a href="terms.html"><i class="fa-solid fa-file-contract"></i> Terms of Service</a>
+        <a href="security.html"><i class="fa-solid fa-lock"></i> Security</a>
+        <a href="index.html"><i class="fa-solid fa-house"></i> Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function initThemeSystem() {
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btnTheme = document.getElementById('btn-theme');
+        if (!btnTheme) return;
+        if (theme === 'dark') {
+          btnTheme.innerHTML = '<i class="fa-solid fa-moon" style="color:#a78bfa;"></i>';
+          btnTheme.style.background = 'rgba(109,90,255,0.22)';
+          btnTheme.style.border = '1.5px solid rgba(167,139,250,0.6)';
+        } else {
+          btnTheme.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+          btnTheme.style.background = 'rgba(251,191,36,0.18)';
+          btnTheme.style.border = '1.5px solid rgba(251,191,36,0.7)';
+        }
+      }
+      const osTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      applyTheme(localStorage.getItem('lgs_theme') || osTheme);
+      const btnTheme = document.getElementById('btn-theme');
+      if (btnTheme) {
+        btnTheme.addEventListener('click', function () {
+          const current = document.documentElement.getAttribute('data-theme');
+          const next = current === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('lgs_theme', next);
+          applyTheme(next);
+        });
+      }
+    })();
+  </script>
+</body>
+
+</html>

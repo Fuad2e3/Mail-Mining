@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded into.
+    // Static hosting cannot set X-Frame-Options and CSP frame-ancestors is not
+    // honored via <meta>, so this JS guard is the only defense available here.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    // Paint the saved theme before first render to avoid a flash.
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+
+    // Same session guard the rest of the site uses.
+    if (localStorage.getItem('lgs_auth') !== 'true' && sessionStorage.getItem('lgs_auth') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <script src="assets/config.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#0a0b0f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f8f9fc" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+
+  <title>Search History – EmailFinder</title>
+  <meta name="description" content="Every search you have run, saved locally in this browser.">
+  <meta name="author" content="Softece">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/ef-app.css?v=20260828">
+
+  <!-- Icons load out of band: the page is fully usable before (or without) them,
+       and EF.icons() re-runs over the document once the library arrives. -->
+  <script async src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"
+    onload="window.EF && EF.icons()"
+    onerror="var s=document.createElement('script');s.async=true;s.src='https://unpkg.com/lucide@latest/dist/umd/lucide.min.js';s.onload=function(){window.EF && EF.icons();};document.head.appendChild(s);"></script>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Sidebar navigation">
+    <a href="dashboard.html" class="sidebar__logo">
+      <div class="sidebar__logo-icon"><i data-lucide="at-sign"></i></div>
+      <span class="sidebar__logo-name">EmailFinder</span>
+    </a>
+
+    <nav class="sidebar__nav">
+      <div class="nav-section">
+        <a href="dashboard.html"    class="nav-link"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="finder.html"       class="nav-link"><i data-lucide="search"></i> Email Finder</a>
+        <a href="bulk-finder.html"  class="nav-link"><i data-lucide="layers"></i> Bulk Finder</a>
+        <a href="verification.html" class="nav-link"><i data-lucide="shield-check"></i> Verification</a>
+        <a href="history.html"      class="nav-link"><i data-lucide="history"></i> History</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Resources</div>
+        <a href="api.html"     class="nav-link"><i data-lucide="code-2"></i> API Documentation</a>
+        <a href="pricing.html" class="nav-link"><i data-lucide="credit-card"></i> Pricing</a>
+        <a href="app.html"     class="nav-link"><i data-lucide="globe"></i> Web Data Mining</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Account</div>
+        <a href="settings.html" class="nav-link"><i data-lucide="settings"></i> Settings</a>
+        <a href="index.html"    class="nav-link"><i data-lucide="home"></i> Home Page</a>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="sidebar__user">
+        <div class="sidebar__avatar" id="ef-avatar">U</div>
+        <div class="sidebar__user-main">
+          <div class="sidebar__user-name" id="ef-user-name">User</div>
+          <span class="plan-badge" id="ef-user-plan">Free Plan</span>
+        </div>
+        <button class="sidebar__logout" data-ef-logout title="Log out" aria-label="Log out">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+
+      <div class="credit-box">
+        <div class="credit-box__row">
+          <span class="credit-box__label"><i data-lucide="coins"></i> <span id="ef-credit-label">50 / 50 credits</span></span>
+          <span class="credit-box__pct" id="ef-credit-pct">100%</span>
+        </div>
+        <div class="credit-box__track"><div class="credit-box__fill" id="ef-credit-fill"></div></div>
+      </div>
+
+      <a href="pricing.html" class="btn btn--primary btn--sm btn--full">
+        <i data-lucide="arrow-up-circle"></i> Upgrade plan
+      </a>
+    </div>
+  </aside>
+  <div id="sidebar-overlay"></div>
+
+  <!-- ── Main column ──────────────────────────────────────────────────── -->
+  <div class="main-content">
+    <header class="topbar">
+      <button class="hamburger" data-sidebar-toggle aria-expanded="false" aria-controls="sidebar" aria-label="Open sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="topbar__title">Search History</span>
+      <div class="topbar__actions">
+        <span class="topbar__credits" title="Credits remaining today">
+          <i data-lucide="coins"></i> <span data-ef-credits>50</span>
+        </span>
+        <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme" aria-pressed="true"><i data-lucide="sun"></i></button>
+        
+      </div>
+    </header>
+
+    <main class="page-body" id="main-content">
+      <div class="announce-banner" id="ef-announcement">
+        <span class="announce-banner__text">
+          <i data-lucide="megaphone"></i>
+          <span id="ef-announcement-text"></span>
+        </span>
+        <button class="announce-banner__close" id="ef-announcement-close" aria-label="Dismiss announcement">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="page-header page-header--row">
+        <div>
+          <h1>Search History</h1>
+          <p class="text-muted">Saved locally in this browser — nothing is uploaded.</p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button id="export-history-btn" class="btn btn--outline btn--sm"><i data-lucide="download"></i> Export CSV</button>
+          <button id="clear-history-btn" class="btn btn--ghost btn--sm" style="color:var(--red);"><i data-lucide="trash-2"></i> Clear history</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        <input class="form-input" id="history-search" type="search" placeholder="Search by name, email, company or domain…" style="flex:1;min-width:220px;" aria-label="Search history">
+        <select class="form-input" id="history-filter" style="max-width:180px;" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="valid">Valid</option>
+          <option value="unknown">Unknown</option>
+          <option value="invalid">Invalid</option>
+        </select>
+      </div>
+
+      <div id="history-container"></div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/ef/data.js?v=20260828"></script>
+<script src="assets/ef/core.js?v=20260828"></script>
+<script src="assets/ef/history.js?v=20260828"></script>
+</body>
+
+</html>

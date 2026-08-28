@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded
+    // into. GitHub Pages serves static files with no way to set the
+    // X-Frame-Options header, and CSP's frame-ancestors directive is not
+    // honored via <meta> — so this JS-level guard is the only defense
+    // available on this hosting platform.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#070913" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>Page Not Found — EmailFinder</title>
+  <meta name="robots" content="noindex">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <style>
+    :root {
+      --bg-app: #070913;
+      --bg-card: rgba(15, 23, 42, 0.7);
+      --border-card: rgba(255, 255, 255, 0.08);
+      --text-heading: #f8fafc;
+      --text-muted: #94a3b8;
+      --color-primary: #6366f1;
+      --color-accent: #06b6d4;
+    }
+
+    [data-theme="light"] {
+      --bg-app: #f8fafc;
+      --bg-card: #ffffff;
+      --border-card: rgba(0, 0, 0, 0.08);
+      --text-heading: #0f172a;
+      --text-muted: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-app);
+      color: var(--text-muted);
+      font-family: 'Inter', system-ui, sans-serif;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: background-color .3s ease, color .3s ease;
+    }
+
+    .glow {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    .glow-1 {
+      top: -100px;
+      left: -100px;
+      background: radial-gradient(circle, #6366f1, #3b82f6);
+    }
+
+    .glow-2 {
+      bottom: -100px;
+      right: -100px;
+      background: radial-gradient(circle, #06b6d4, #10b981);
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 460px;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 22px;
+      padding: 48px 36px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .brand-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 26px;
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    .code-404 {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: 'Outfit', system-ui, sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-heading);
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 22px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), #4f46e5);
+      color: #fff;
+      box-shadow: 0 6px 20px -4px rgba(99, 102, 241, 0.45);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -4px rgba(99, 102, 241, 0.6);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border-color: var(--border-card);
+      color: var(--text-heading);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <div class="card">
+    <div class="brand-icon"><i class="fa-solid fa-spider"></i></div>
+    <div class="code-404">404</div>
+    <h1>Page Not Found</h1>
+    <p>The page you're looking for doesn't exist, may have moved, or the URL was typed incorrectly.</p>
+    <div class="actions">
+      <a href="/" class="btn btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>
+      <a href="/login.html" class="btn btn-secondary"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
+    </div>
+  </div>
+</body>
+
+</html>

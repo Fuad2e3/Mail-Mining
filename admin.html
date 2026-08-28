@@ -1,0 +1,3386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded
+    // into. GitHub Pages serves static files with no way to set the
+    // X-Frame-Options header, and CSP's frame-ancestors directive is not
+    // honored via <meta> — so this JS-level guard is the only defense
+    // available on this hosting platform.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <script src="assets/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#070913" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#F0F4F8" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>Admin Panel — User Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: auto;
+    }
+
+    :root {
+      --bg: #0b0f1a;
+      --bg-card: #111827;
+      --bg-input: #1a2235;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #6c63ff;
+      --accent: #00d2ff;
+      --success: #22d3a5;
+      --warning: #ffb347;
+      --danger: #ff4757;
+      --inactive: #94a3b8;
+      --text: #e2e8f0;
+      --text-muted: #64748b;
+      --text-heading: #f8fafc;
+      --text-main: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme="dark"]) {
+        --bg: #f0f4f8;
+        --bg-card: #ffffff;
+        --bg-input: #f8fafc;
+        --border: rgba(0, 0, 0, 0.1);
+        --text: #1e293b;
+        --text-muted: #64748b;
+        --text-heading: #0f172a;
+        --text-main: #1e293b;
+        --shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
+      }
+    }
+
+    [data-theme="light"] {
+      --bg: #f0f4f8;
+      --bg-card: #ffffff;
+      --bg-input: #f8fafc;
+      --border: rgba(0, 0, 0, 0.1);
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --text-heading: #0f172a;
+      --text-main: #1e293b;
+      --shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
+    }
+
+    /* ── Admin Login Gateway Overlay */
+    .admin-auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #131b2e 0%, #070913 100%);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      transition: background 0.3s;
+    }
+
+    [data-theme="light"] .admin-auth-overlay {
+      background: radial-gradient(circle at center, #f1f5f9 0%, #cbd5e1 100%);
+    }
+
+    .admin-auth-card {
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid rgba(108, 99, 255, 0.35);
+      border-radius: 20px;
+      padding: 40px 36px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 30px rgba(108, 99, 255, 0.25);
+      text-align: center;
+      animation: authCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s;
+    }
+
+    [data-theme="light"] .admin-auth-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(108, 99, 255, 0.25);
+      box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.12), 0 0 30px rgba(108, 99, 255, 0.08);
+    }
+
+    [data-theme="light"] .admin-auth-title {
+      background: linear-gradient(135deg, #0f172a, #334155);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    [data-theme="light"] .admin-auth-subtitle {
+      color: #64748b;
+    }
+
+    [data-theme="light"] .admin-input-group label {
+      color: #334155;
+    }
+
+    [data-theme="light"] .admin-input-wrapper input {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+    }
+
+    [data-theme="light"] .admin-input-wrapper input:focus {
+      background: #ffffff;
+      border-color: #6c63ff;
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+    }
+
+    [data-theme="light"] .admin-input-wrapper i.prefix-icon,
+    [data-theme="light"] .admin-input-wrapper .toggle-pass {
+      color: #94a3b8;
+    }
+
+    @keyframes authCardIn {
+      from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .admin-auth-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #6c63ff, #00d2ff);
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #fff;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+    }
+
+    .admin-auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .admin-auth-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 26px;
+      line-height: 1.5;
+    }
+
+    .admin-input-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+
+    .admin-input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 7px;
+    }
+
+    .admin-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .admin-input-wrapper i.prefix-icon {
+      position: absolute;
+      left: 14px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .admin-input-wrapper input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 12px 40px 12px 40px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .admin-input-wrapper input:focus {
+      border-color: #6c63ff;
+      background: rgba(108, 99, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+    }
+
+    .admin-input-wrapper .toggle-pass {
+      position: absolute;
+      right: 14px;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .admin-input-wrapper .toggle-pass:hover {
+      color: #fff;
+    }
+
+    .btn-admin-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #6c63ff, #4f46e5);
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      transition: all 0.2s;
+      box-shadow: 0 6px 20px rgba(108, 99, 255, 0.35);
+      margin-top: 10px;
+    }
+
+    .btn-admin-submit:hover {
+      background: linear-gradient(135deg, #7c74ff, #5b52f5);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 25px rgba(108, 99, 255, 0.5);
+    }
+
+    .admin-error-box {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .shake-anim {
+      animation: authShake 0.4s ease-in-out;
+    }
+
+    @keyframes authShake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20%,
+      60% {
+        transform: translateX(-8px);
+      }
+
+      40%,
+      80% {
+        transform: translateX(8px);
+      }
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── Header */
+    .admin-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text span {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .api-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--success);
+      background: rgba(34, 211, 165, 0.1);
+      border: 1px solid rgba(34, 211, 165, 0.25);
+      padding: 5px 12px;
+      border-radius: 20px;
+    }
+
+    .api-status .dot {
+      width: 7px;
+      height: 7px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+      }
+    }
+
+    .btn-refresh {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(108, 99, 255, 0.08);
+    }
+
+    .btn-theme-toggle {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-admin-logout {
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-admin-logout:hover {
+      border-color: #ef4444;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    /* ── Main Content */
+    .admin-main {
+      padding: 28px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .stat-icon.blue {
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--primary);
+    }
+
+    .stat-icon.green {
+      background: rgba(34, 211, 165, 0.15);
+      color: var(--success);
+    }
+
+    .stat-icon.red {
+      background: rgba(255, 71, 87, 0.15);
+      color: var(--danger);
+    }
+
+    .stat-icon.orange {
+      background: rgba(255, 179, 71, 0.15);
+      color: var(--warning);
+    }
+
+    .stat-info .value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-info .label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* ── Table Card */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .table-header {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(108, 99, 255, 0.04);
+    }
+
+    .table-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .table-header h2 i {
+      color: var(--primary);
+    }
+
+    .table-search {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 14px 7px 36px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      width: 240px;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+
+    .table-search:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    /* ── Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: rgba(108, 99, 255, 0.08);
+      border-bottom: 1px solid var(--border);
+      padding: 11px 16px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    [data-theme="light"] thead th {
+      color: #0f172a;
+      background: rgba(108, 99, 255, 0.05);
+    }
+
+    thead th i {
+      margin-right: 5px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: rgba(108, 99, 255, 0.05);
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    /* ID column */
+    .td-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Name */
+    .td-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    /* Email */
+    .td-email {
+      color: var(--accent);
+      font-size: 12.5px;
+    }
+
+    /* Password hash */
+    .td-password {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge.active {
+      background: rgba(34, 211, 165, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(34, 211, 165, 0.25);
+    }
+
+    .status-badge.inactive {
+      background: rgba(100, 116, 139, 0.12);
+      color: var(--inactive);
+      border: 1px solid rgba(100, 116, 139, 0.25);
+    }
+
+    .status-badge.banned {
+      background: rgba(255, 71, 87, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(255, 71, 87, 0.25);
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Package Badges */
+    .package-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .package-badge.free {
+      background: rgba(100, 116, 139, 0.15);
+      color: var(--inactive);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+
+    .package-badge.pro {
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(108, 99, 255, 0.3);
+    }
+
+    .package-badge.enterprise {
+      background: rgba(255, 179, 71, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(255, 179, 71, 0.3);
+    }
+
+    /* Violations */
+    .td-violations {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .violations-0 {
+      color: var(--success);
+    }
+
+    .violations-low {
+      color: var(--warning);
+    }
+
+    .violations-high {
+      color: var(--danger);
+    }
+
+    /* Datetime */
+    .td-datetime {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: nowrap;
+    }
+
+    .btn-action {
+      border: none;
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-ban {
+      background: rgba(255, 71, 87, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(255, 71, 87, 0.2);
+    }
+
+    .btn-unban {
+      background: rgba(34, 211, 165, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(34, 211, 165, 0.2);
+    }
+
+    .btn-reset {
+      background: rgba(255, 179, 71, 0.12);
+      color: var(--warning);
+      border: 1px solid rgba(255, 179, 71, 0.2);
+    }
+
+    .btn-delete {
+      background: rgba(255, 71, 87, 0.08);
+      color: var(--danger);
+      border: 1px solid rgba(255, 71, 87, 0.15);
+    }
+
+    .btn-ban:hover {
+      background: rgba(255, 71, 87, 0.25);
+    }
+
+    .btn-unban:hover {
+      background: rgba(34, 211, 165, 0.25);
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 179, 71, 0.25);
+    }
+
+    .btn-delete:hover {
+      background: rgba(255, 71, 87, 0.2);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* Loading spinner */
+    .loading-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .spinner-lg {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(108, 99, 255, 0.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 14px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+      min-width: 260px;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.success {
+      border-color: rgba(34, 211, 165, 0.4);
+      color: var(--success);
+    }
+
+    .toast.error {
+      border-color: rgba(255, 71, 87, 0.4);
+      color: var(--danger);
+    }
+
+    .toast.info {
+      border-color: rgba(108, 99, 255, 0.4);
+      color: var(--primary);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Error alert */
+    .error-alert {
+      background: rgba(255, 71, 87, 0.08);
+      border: 1px solid rgba(255, 71, 87, 0.3);
+      border-radius: 10px;
+      padding: 16px 20px;
+      color: var(--danger);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .table-footer {
+      padding: 12px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-see-more {
+      background: rgba(108, 99, 255, 0.12);
+      border: 1px solid rgba(108, 99, 255, 0.35);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-see-more:hover {
+      background: rgba(108, 99, 255, 0.25);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+    }
+
+    .btn-see-less {
+      background: rgba(100, 116, 139, 0.12);
+      border: 1px solid rgba(100, 116, 139, 0.3);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-see-less:hover {
+      background: rgba(100, 116, 139, 0.22);
+      color: var(--text);
+    }
+
+    @media (max-width: 1024px) {
+      .admin-main {
+        padding: 20px;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .header-brand {
+        justify-content: space-between;
+      }
+
+      .header-right {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .admin-main {
+        padding: 14px;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .analytics-grid {
+        grid-template-columns: 1fr !important;
+      }
+
+      .table-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .table-search {
+        width: 100%;
+      }
+
+      .admin-auth-card {
+        padding: 28px 20px;
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-card {
+        padding: 12px 14px;
+      }
+
+      .stat-info .value {
+        font-size: 22px;
+      }
+
+      .table-footer {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+    }
+
+    /* ── Analytics Visualizer Section — Professional Polish */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .analytics-card {
+      padding: 20px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .analytics-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .analytics-card-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+
+    .analytics-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .analytics-badge.blue {
+      background: rgba(99, 102, 241, 0.12);
+      color: #818cf8;
+    }
+
+    .analytics-badge.green {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+    }
+
+    .analytics-chart-wrap {
+      position: relative;
+      height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .analytics-list-wrap {
+      height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .analytics-list-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .analytics-list-loading i {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ── System Announcement Manager Card */
+    .announcement-card {
+      margin-bottom: 24px;
+      padding: 20px;
+    }
+
+    .announcement-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .announcement-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .announcement-row .table-search {
+      flex: 1;
+      width: auto;
+    }
+
+    .btn-announce-publish {
+      padding: 8px 18px;
+      font-size: 12px;
+    }
+
+    .btn-announce-clear {
+      padding: 8px 14px;
+      font-size: 12px;
+    }
+
+    /* ── Login Gateway Theme Toggle */
+    .auth-theme-toggle-wrap {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    #btn-auth-theme {
+      padding: 7px 14px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* ── Pending Approval stat icon (distinct amber accent) */
+    .stat-icon.pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+    }
+
+    .stat-info .value.pending {
+      color: #f59e0b;
+    }
+
+    /* ── PENDING count badges (Registration / Upgrade request cards) */
+    .pending-count-badge {
+      display: none;
+      font-size: 11px;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pending-count-badge.amber {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+    }
+
+    .pending-count-badge.red {
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      box-shadow: 0 0 10px rgba(255, 71, 87, 0.4);
+    }
+
+    /* ── Section spacing between stacked table cards */
+    .table-card.section-spaced {
+      margin-top: 28px;
+    }
+
+    .table-header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-loading-row {
+      padding: 30px;
+      color: var(--text-muted);
+    }
+
+    .see-more-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* ── Users Table Filter Row */
+    .users-filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .users-filter-row select.table-search {
+      width: auto;
+      padding: 7px 12px;
+      cursor: pointer;
+    }
+
+    /* ── Bulk select column & actions bar */
+    .th-checkbox {
+      width: 36px;
+    }
+
+    .td-checkbox {
+      width: 36px;
+      text-align: center;
+    }
+
+    .row-select-checkbox,
+    #select-all-users {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .bulk-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px 20px;
+      background: rgba(108, 99, 255, 0.08);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .bulk-actions-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Activity Logs search bar */
+    .logs-search-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* 🛡️ Human Verification Component for Admin */
+    .recaptcha-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface-elevated, var(--bg-card));
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    .recaptcha-box:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.06);
+    }
+    .recaptcha-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2.5px solid rgba(255, 255, 255, 0.45);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    [data-theme="light"] .recaptcha-checkbox {
+      border: 2.5px solid #94a3b8;
+      background: #ffffff;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+    .recaptcha-box:hover .recaptcha-checkbox {
+      border-color: #6366f1;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.45);
+      transform: scale(1.05);
+    }
+    .recaptcha-box.verifying .recaptcha-checkbox {
+      border: 3px solid #6366f1;
+      border-top-color: transparent;
+      border-radius: 50%;
+      background: transparent;
+      box-shadow: none;
+      animation: spinAdminVerify 0.6s linear infinite;
+    }
+    @keyframes spinAdminVerify {
+      to { transform: rotate(360deg); }
+    }
+    .recaptcha-box.verified .recaptcha-checkbox {
+      background: #10b981 !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.6) !important;
+      transform: scale(1);
+    }
+    .recaptcha-checkbox i {
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      display: none;
+    }
+    .recaptcha-box.verified .recaptcha-checkbox i {
+      display: block;
+      animation: checkAdminPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes checkAdminPop {
+      0% { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 🔒 Super Admin Login Gateway Overlay -->
+  <div id="admin-auth-overlay" class="admin-auth-overlay">
+    <!-- Top-Right Theme Toggle on Login Screen -->
+    <div class="auth-theme-toggle-wrap">
+      <button id="btn-auth-theme" class="btn-refresh" title="Toggle Light/Dark Theme">
+        <i class="fa-solid fa-moon"></i> <span>Theme</span>
+      </button>
+    </div>
+
+    <div class="admin-auth-card" id="admin-auth-card">
+      <div class="admin-auth-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="admin-auth-title">Super Admin Portal</h2>
+      <p class="admin-auth-subtitle">Restricted Access. Enter administrator credentials to manage users, packages,
+        credits, and system settings.</p>
+
+      <div id="admin-auth-error" class="admin-error-box">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="admin-auth-error-text">Invalid Admin Email or Password!</span>
+      </div>
+
+      <form id="admin-login-form">
+        <div class="admin-input-group">
+          <label>Admin Email Address</label>
+          <div class="admin-input-wrapper">
+            <i class="fa-solid fa-envelope prefix-icon"></i>
+            <input type="email" id="admin-login-email" required placeholder="Enter admin email" autocomplete="username">
+          </div>
+        </div>
+
+        <div class="admin-input-group">
+          <label>Admin Secret Password</label>
+          <div class="admin-input-wrapper">
+            <i class="fa-solid fa-lock prefix-icon"></i>
+            <input type="password" id="admin-login-password" required placeholder="Enter secret password"
+              autocomplete="current-password">
+            <i class="fa-solid fa-eye toggle-pass" id="btn-toggle-admin-pass"></i>
+          </div>
+        </div>
+
+        <!-- 🛡️ Human Verification (Admin Security) -->
+        <div class="human-verify-card" id="admin-human-verify-card" style="margin: 16px 0 18px; padding: 12px 14px; background: rgba(99, 102, 241, 0.04); border: 1px solid var(--border-subtle); border-radius: 12px; transition: all 0.25s ease;">
+          <div class="human-verify-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div class="human-verify-title" style="display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--text-heading);">
+              <i class="fa-solid fa-shield-halved" style="color: #10b981; font-size: 14px;"></i>
+              <span>Human Verification</span>
+            </div>
+          </div>
+
+          <div class="recaptcha-box" id="admin-recaptcha-box" role="checkbox" aria-checked="false" tabindex="0">
+            <div class="recaptcha-left" style="display: flex; align-items: center; gap: 12px;">
+              <div class="recaptcha-checkbox" id="admin-recaptcha-checkbox">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <span class="recaptcha-label" id="admin-recaptcha-label" style="font-size: 13.5px; font-weight: 600; color: var(--text-heading);">I'm not a robot</span>
+            </div>
+            <div class="recaptcha-right" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; opacity: 0.85;">
+              <i class="fa-brands fa-cloudflare" style="color:#f38020; font-size: 18px;"></i>
+              <span style="font-size: 9px; color: var(--text-muted); font-weight: 500;">Security Cloud</span>
+            </div>
+          </div>
+
+          <div class="verify-footer-note" style="display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--text-muted); font-weight: 500;">
+            <i class="fa-solid fa-circle-check" style="color: #10b981; font-size: 12px;"></i>
+            <span>Security verification to safeguard Admin portal</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-admin-submit" id="btn-admin-submit">
+          <i class="fa-solid fa-unlock-keyhole"></i> <span>Unlock Admin Panel</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-dashboard-container" style="display: none;">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="header-brand">
+        <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="brand-text">
+          <h1>Admin Panel</h1>
+          <span>User Management Dashboard</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="api-status" id="api-status-badge">
+          <div class="dot"></div>
+          <span id="api-status-text">Connecting...</span>
+        </div>
+        <button class="btn-refresh" onclick="loadUsers()">
+          <i class="fa-solid fa-rotate-right" id="refresh-icon"></i> Refresh
+        </button>
+        <button id="btn-theme" class="btn-theme-toggle" title="Toggle Light/Dark Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="btn-admin-logout" class="btn-refresh btn-admin-logout"
+          title="Logout from Admin Panel">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main -->
+    <main class="admin-main">
+
+      <!-- Error alert placeholder -->
+      <div id="error-alert" class="error-alert" style="display:none;">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="error-msg"></span>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-info">
+            <div class="value" id="stat-total">—</div>
+            <div class="label">Total Users</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-info">
+            <div class="value" id="stat-active">—</div>
+            <div class="label">Active</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange pending"><i class="fa-solid fa-user-clock"></i></div>
+          <div class="stat-info">
+            <div class="value pending" id="stat-pending">—</div>
+            <div class="label">Pending Approval</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fa-solid fa-ban"></i></div>
+          <div class="stat-info">
+            <div class="value" id="stat-banned">—</div>
+            <div class="label">Banned</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-info">
+            <div class="value" id="stat-violations">—</div>
+            <div class="label">Total Violations</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Visualizer Section -->
+      <div class="analytics-grid">
+        <!-- Package Distribution Chart -->
+        <div class="table-card analytics-card">
+          <div class="analytics-card-header">
+            <h3>
+              <i class="fa-solid fa-chart-pie" style="color: #6366f1;"></i> User Package Breakdown
+            </h3>
+            <span id="pkg-chart-total" class="analytics-badge blue">0 Users</span>
+          </div>
+          <div class="analytics-chart-wrap">
+            <canvas id="packageChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Today's Active Users & Mining Activity Card -->
+        <div class="table-card analytics-card">
+          <div class="analytics-card-header">
+            <h3>
+              <i class="fa-solid fa-users-rays" style="color: #22c55e;"></i> Today's Active Users & Mining
+            </h3>
+            <span id="daily-active-badge" class="analytics-badge green">0 Active Today</span>
+          </div>
+          <div id="daily-users-container" class="analytics-list-wrap">
+            <div class="analytics-list-loading">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              <p>Loading today's active users...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Announcement Manager Card -->
+      <div class="table-card announcement-card">
+        <h3>
+          <i class="fa-solid fa-bullhorn" style="color: var(--accent);"></i> System Announcement Banner Manager
+        </h3>
+        <div class="announcement-row">
+          <input type="text" id="announcement-input" class="table-search"
+            placeholder="Type system-wide announcement for all users (e.g. Upgrade to Pro for unlimited mining)...">
+          <button class="btn-action btn-unban btn-announce-publish" onclick="publishAnnouncement()"
+            ><i class="fa-solid fa-paper-plane"></i> Publish Banner</button>
+          <button class="btn-action btn-delete btn-announce-clear" onclick="clearAnnouncement()"
+            ><i class="fa-solid fa-xmark"></i> Clear</button>
+        </div>
+      </div>
+
+      <!-- 1. New User Registration Approval Requests Card -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-header-title-row">
+            <h2><i class="fa-solid fa-user-clock" style="color:#f59e0b;"></i> New User Registration Approval Requests</h2>
+            <span id="badge-pending-registrations" class="pending-count-badge amber" style="display:none;">0 PENDING</span>
+          </div>
+          <button class="btn-refresh" onclick="loadPendingUsers()"><i class="fa-solid fa-rotate-right"
+              id="pending-users-refresh-icon"></i> Refresh Requests</button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th><i class="fa-solid fa-hashtag"></i>User ID</th>
+                <th><i class="fa-solid fa-user"></i>User Name</th>
+                <th><i class="fa-solid fa-at"></i>Email</th>
+                <th><i class="fa-solid fa-crown"></i>Default Package</th>
+                <th><i class="fa-solid fa-circle-dot"></i>Status</th>
+                <th><i class="fa-solid fa-calendar-plus"></i>Registered Date</th>
+                <th><i class="fa-solid fa-gears"></i>Action</th>
+              </tr>
+            </thead>
+            <tbody id="pending-users-table-body">
+              <tr>
+                <td colspan="7" class="text-center table-loading-row">Loading pending user registration requests...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer" id="pending-users-table-footer" style="display: none;">
+          <span id="pending-users-footer-count">Showing 0 requests</span>
+          <div id="pending-users-see-more-container" class="see-more-container"></div>
+        </div>
+      </div>
+
+      <!-- 2. User Package Upgrade Requests Card -->
+      <div class="table-card section-spaced">
+        <div class="table-header">
+          <div class="table-header-title-row">
+            <h2><i class="fa-solid fa-bolt" style="color:#ffb347;"></i> User Package Upgrade Requests</h2>
+            <span id="badge-pending-upgrades" class="pending-count-badge red" style="display:none;">0 PENDING</span>
+          </div>
+          <button class="btn-refresh" onclick="loadUpgradeRequests()"><i class="fa-solid fa-rotate-right"
+              id="upgrades-refresh-icon"></i> Refresh Requests</button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th><i class="fa-solid fa-hashtag"></i>Req ID</th>
+                <th><i class="fa-solid fa-user"></i>User</th>
+                <th><i class="fa-solid fa-at"></i>Email</th>
+                <th><i class="fa-solid fa-crown"></i>Requested Package</th>
+                <th><i class="fa-solid fa-circle-dot"></i>Status</th>
+                <th><i class="fa-solid fa-calendar-plus"></i>Requested Date</th>
+                <th><i class="fa-solid fa-gears"></i>Action</th>
+              </tr>
+            </thead>
+            <tbody id="upgrades-table-body">
+              <tr>
+                <td colspan="7" class="text-center table-loading-row">Loading package
+                  upgrade requests...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer" id="upgrades-table-footer" style="display: none;">
+          <span id="upgrades-footer-count">Showing 0 requests</span>
+          <div id="upgrades-see-more-container" class="see-more-container"></div>
+        </div>
+      </div>
+
+      <!-- 3. Users Table Card -->
+      <div class="table-card section-spaced">
+        <div class="table-header">
+          <h2><i class="fa-solid fa-table-list"></i> Users Table</h2>
+          <div class="users-filter-row">
+            <select id="filter-status" class="table-search">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending Approval</option>
+              <option value="active">Active</option>
+              <option value="banned">Banned</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <select id="filter-package" class="table-search">
+              <option value="">All Packages</option>
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+            <div class="search-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="table-search" id="search-input" placeholder="Search name, email, id...">
+            </div>
+            <button class="btn-refresh" id="btn-export-users-csv" title="Export the currently filtered users to a CSV file"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          </div>
+        </div>
+
+        <div id="bulk-actions-bar" class="bulk-actions-bar" style="display:none;">
+          <span id="bulk-selected-count">0 selected</span>
+          <div class="bulk-actions-buttons">
+            <button class="btn-action primary" id="btn-bulk-ban" style="background:rgba(239,68,68,0.15);color:#ef4444;border-color:rgba(239,68,68,0.3);"><i class="fa-solid fa-ban"></i> Ban Selected</button>
+            <button class="btn-action danger" id="btn-bulk-delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+            <button class="btn-action" id="btn-bulk-clear"><i class="fa-solid fa-xmark"></i> Clear Selection</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table id="users-table">
+            <thead>
+              <tr>
+                <th class="th-checkbox"><input type="checkbox" id="select-all-users" title="Select all users matching the current filter (not just this page)"></th>
+                <th><i class="fa-solid fa-hashtag"></i>ID</th>
+                <th><i class="fa-solid fa-user"></i>Name</th>
+                <th><i class="fa-solid fa-at"></i>Email</th>
+                <th><i class="fa-solid fa-crown"></i>Package & Credits</th>
+                <th><i class="fa-solid fa-circle-dot"></i>Status</th>
+                <th><i class="fa-solid fa-shield-halved"></i>Violations</th>
+                <th><i class="fa-solid fa-clock"></i>Last Login</th>
+                <th><i class="fa-solid fa-calendar-plus"></i>Created At</th>
+                <th><i class="fa-solid fa-gears"></i>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr>
+                <td colspan="10">
+                  <div class="loading-state">
+                    <div class="spinner-lg"></div>
+                    <p>Loading users from database...</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-footer" id="users-table-footer">
+          <span id="footer-count">Loading...</span>
+          <div id="users-see-more-container" class="see-more-container"></div>
+          <span id="footer-time"></span>
+        </div>
+      </div>
+
+      <!-- 4. System Activity Audit Logs Card -->
+      <div class="table-card section-spaced">
+        <div class="table-header">
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> System Activity Audit Logs</h2>
+          <div class="logs-search-row">
+            <div class="search-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="table-search" id="logs-search-input" placeholder="Search email, action, details...">
+            </div>
+            <button class="btn-refresh" onclick="loadActivityLogs()"><i class="fa-solid fa-rotate-right"
+                id="logs-refresh-icon"></i> Refresh Logs</button>
+            <button class="btn-refresh" id="btn-export-logs-csv" title="Export the currently filtered logs to a CSV file"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th><i class="fa-solid fa-hashtag"></i>ID</th>
+                <th><i class="fa-solid fa-user"></i>User Email</th>
+                <th><i class="fa-solid fa-bolt"></i>Action</th>
+                <th><i class="fa-solid fa-file-lines"></i>Details</th>
+                <th><i class="fa-solid fa-clock"></i>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="logs-table-body">
+              <tr>
+                <td colspan="5" class="text-center table-loading-row">Loading system
+                  activity audit logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer" id="logs-table-footer" style="display: none;">
+          <span id="logs-footer-count">Showing 0 logs</span>
+          <div id="logs-see-more-container" class="see-more-container"></div>
+        </div>
+      </div>
+
+    </main>
+  </div> <!-- /admin-dashboard-container -->
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script>
+    // ── Server URL Config ────────────────────────────────────────────────────
+    function getApiHost() {
+      const custom = (localStorage.getItem('lgs_api_url') || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
+      if (custom) return custom;
+      const globalCfg = (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') : '';
+      if (globalCfg) return globalCfg;
+      const h = window.location.hostname;
+      const isLocal = h === 'localhost' || h === '127.0.0.1';
+      const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(h);
+      if (isLocal) return 'http://localhost:3000';
+      if (isIp) return `http://${h}:3000`;
+      if (h.endsWith('github.io') || h.endsWith('netlify.app') || h.endsWith('vercel.app')) {
+        return (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '') : 'http://localhost:3000';
+      }
+      return (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? ((window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || 'http://localhost:3000') : window.location.origin;
+    }
+    window.getApiHost = getApiHost;
+    const _API_HOST = getApiHost();
+    const API_BASE = `${_API_HOST}/api/admin`;
+    // ─────────────────────────────────────────────────────────────────────────
+    const _savedToken = localStorage.getItem('lgs_admin_secret') || sessionStorage.getItem('lgs_admin_secret') || '';
+    const ADMIN_HEADERS = {
+      'Content-Type': 'application/json',
+      'x-admin-secret': _savedToken,
+      'Authorization': _savedToken ? `Bearer ${_savedToken}` : ''
+    };
+
+    // ── HTML-escape helper — always wrap user-controlled text (name, email,
+    //    details, etc.) before inserting into innerHTML to prevent stored XSS.
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ── Toast
+    function toast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info';
+      // msg often comes straight from a backend API response — set via
+      // textContent (never innerHTML) so it can never be interpreted as HTML.
+      el.innerHTML = `<i class="fa-solid ${icon}"></i><span></span>`;
+      el.querySelector('span').textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
+    // ── Format date
+    function fmtDate(d) {
+      if (!d) return '<span style="color:var(--text-muted);font-style:italic;">Never</span>';
+      const dt = new Date(d);
+      if (isNaN(dt)) return d;
+      return dt.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ── Avatar initials
+    function initials(name) {
+      if (!name) return '?';
+      return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    // ── Violations color class
+    function violationClass(v) {
+      if (v === 0) return 'violations-0';
+      if (v < 3) return 'violations-low';
+      return 'violations-high';
+    }
+
+    // ── Pagination & Display Limits (Default 10 items) ────────────────────────
+    let allUsers = [];
+    let currentFilteredUsers = [];
+    let usersDisplayLimit = 10;
+
+    let allPendingUsers = [];
+    let pendingUsersDisplayLimit = 10;
+
+    let allUpgradeRequests = [];
+    let upgradesDisplayLimit = 10;
+
+    let allActivityLogs = [];
+    let logsDisplayLimit = 10;
+    let logsSearchQuery = '';
+
+    // ── Bulk Selection (Users Table) ──────────────────────────────────────────
+    let selectedUserIds = new Set();
+
+    function syncSelectAllCheckbox() {
+      const selectAll = document.getElementById('select-all-users');
+      if (!selectAll) return;
+      // Scoped to every user matching the current filter — not just the
+      // rows currently rendered on screen (pagination via "See More") — so
+      // the checked/indeterminate state always matches what Bulk Actions
+      // will actually operate on.
+      const total = currentFilteredUsers.length;
+      if (total === 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        return;
+      }
+      const selectedCount = currentFilteredUsers.filter(u => selectedUserIds.has(u.id)).length;
+      selectAll.checked = selectedCount === total;
+      selectAll.indeterminate = selectedCount > 0 && selectedCount < total;
+    }
+
+    function updateBulkActionsBar() {
+      const bar = document.getElementById('bulk-actions-bar');
+      const countEl = document.getElementById('bulk-selected-count');
+      if (!bar || !countEl) return;
+      const count = selectedUserIds.size;
+      countEl.textContent = `${count} selected`;
+      bar.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    // ── Render Users Table
+    function renderTable(users) {
+      currentFilteredUsers = users || [];
+      const tbody = document.getElementById('table-body');
+      const seeMoreContainer = document.getElementById('users-see-more-container');
+
+      if (currentFilteredUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa-solid fa-users-slash"></i><p>No users found.</p></div></td></tr>`;
+        document.getElementById('footer-count').textContent = '0 users found';
+        if (seeMoreContainer) seeMoreContainer.innerHTML = '';
+        syncSelectAllCheckbox();
+        updateBulkActionsBar();
+        return;
+      }
+
+      const usersToRender = currentFilteredUsers.slice(0, usersDisplayLimit);
+
+      tbody.innerHTML = usersToRender.map(u => {
+        const remainingCredits = Math.max(0, (u.daily_credits || 50) - (u.used_credits_today || 0));
+        const totalCredits = u.daily_credits || 50;
+        const usedPercent = Math.min(100, Math.round(((u.used_credits_today || 0) / totalCredits) * 100));
+
+        const statusBadge = u.status === 'pending'
+          ? `<span class="status-badge pending"><i class="fa-solid fa-clock"></i> Pending</span>`
+          : u.status === 'active'
+            ? `<span class="status-badge active"><i class="fa-solid fa-circle-check"></i> Active</span>`
+            : u.status === 'banned'
+              ? `<span class="status-badge banned"><i class="fa-solid fa-ban"></i> Banned</span>`
+              : `<span class="status-badge inactive"><i class="fa-solid fa-circle-pause"></i> Inactive</span>`;
+
+        const approveBtn = u.status === 'pending'
+          ? `<button class="btn-action primary" onclick="setStatus(${u.id}, 'active')" style="background:rgba(34,197,94,0.15);color:#22c55e;border-color:rgba(34,197,94,0.3);" title="Approve Registration"><i class="fa-solid fa-check"></i> Approve</button>`
+          : '';
+
+        return `
+        <tr id="row-${u.id}">
+          <td class="td-checkbox"><input type="checkbox" class="row-select-checkbox" data-id="${u.id}" ${selectedUserIds.has(u.id) ? 'checked' : ''}></td>
+          <td class="td-id">#${u.id}</td>
+          <td>
+            <div class="td-name">
+              <div class="avatar">${escapeHtml(initials(u.name))}</div>
+              <span>${escapeHtml(u.name) || '—'}</span>
+            </div>
+          </td>
+          <td class="td-email">${escapeHtml(u.email)}</td>
+          <td>
+            <div style="display:flex;flex-direction:column;gap:3px;min-width:140px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+                <span class="package-badge ${u.package || 'free'}">
+                  <i class="fa-solid fa-crown"></i> ${(u.package || 'free')}
+                </span>
+                <span style="font-size:12px;color:#00d2ff;font-weight:700;">
+                  <i class="fa-solid fa-coins" style="color:#ffb347;font-size:10px;"></i> ${remainingCredits} left
+                </span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:10.5px;color:var(--text-muted);font-weight:600;">
+                <span>Used: ${u.used_credits_today || 0}</span>
+                <span>Max: ${totalCredits}</span>
+              </div>
+              <div style="width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;">
+                <div style="width:${usedPercent}%;height:100%;background:linear-gradient(90deg,#00d2ff,#6c63ff);border-radius:3px;transition:width 0.3s ease;"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            ${statusBadge}
+          </td>
+          <td class="td-violations">
+            <span class="${violationClass(u.rate_limit_violations)}">${u.rate_limit_violations}</span>
+          </td>
+          <td class="td-datetime">${fmtDate(u.last_login)}</td>
+          <td class="td-datetime">${fmtDate(u.created_at)}</td>
+          <td>
+            <div class="actions">
+              ${approveBtn}
+              <button class="btn-action btn-reset" onclick="changeUserPackage(${u.id}, '${u.package || 'free'}', ${u.daily_credits || 50})" title="Change Package & Custom Credits"><i class="fa-solid fa-sliders"></i> Plan</button>
+              ${u.status !== 'banned'
+          ? `<button class="btn-action btn-ban" onclick="setStatus(${u.id}, 'banned')" title="Ban User"><i class="fa-solid fa-ban"></i> Ban</button>`
+          : `<button class="btn-action btn-unban" onclick="setStatus(${u.id}, 'active')" title="Unban User"><i class="fa-solid fa-circle-check"></i> Unban</button>`
+        }
+              <button class="btn-action btn-reset" onclick="resetViolations(${u.id})" title="Reset Violations"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+              <button class="btn-action btn-delete" onclick="deleteUser(${u.id})" title="Delete User"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+      }).join('');
+
+      // Wire up per-row checkboxes and keep selection state in sync across re-renders
+      tbody.querySelectorAll('.row-select-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const id = parseInt(cb.dataset.id, 10);
+          if (cb.checked) selectedUserIds.add(id); else selectedUserIds.delete(id);
+          syncSelectAllCheckbox();
+          updateBulkActionsBar();
+        });
+      });
+      syncSelectAllCheckbox();
+      updateBulkActionsBar();
+
+      document.getElementById('footer-count').textContent = `Showing ${usersToRender.length} of ${currentFilteredUsers.length} users`;
+
+      if (seeMoreContainer) {
+        let btnsHtml = '';
+        if (currentFilteredUsers.length > usersDisplayLimit) {
+          const remaining = currentFilteredUsers.length - usersDisplayLimit;
+          btnsHtml += `<button class="btn-see-more" onclick="showMoreUsers()"><i class="fa-solid fa-chevron-down"></i> See More (+${Math.min(10, remaining)})</button>`;
+          btnsHtml += `<button class="btn-see-more" onclick="showAllUsers()"><i class="fa-solid fa-angles-down"></i> See All (${currentFilteredUsers.length})</button>`;
+        } else if (usersDisplayLimit > 10 && currentFilteredUsers.length > 10) {
+          btnsHtml += `<button class="btn-see-less" onclick="showLessUsers()"><i class="fa-solid fa-chevron-up"></i> Show Less (10)</button>`;
+        }
+        seeMoreContainer.innerHTML = btnsHtml;
+      }
+    }
+
+    function showMoreUsers() {
+      usersDisplayLimit += 10;
+      renderTable(currentFilteredUsers);
+    }
+
+    function showAllUsers() {
+      usersDisplayLimit = currentFilteredUsers.length;
+      renderTable(currentFilteredUsers);
+    }
+
+    function showLessUsers() {
+      usersDisplayLimit = 10;
+      renderTable(currentFilteredUsers);
+    }
+
+    // ── Update stats & Analytics Visualizer
+    function updateStats(users) {
+      document.getElementById('stat-total').textContent = users.length;
+      document.getElementById('stat-active').textContent = users.filter(u => u.status === 'active').length;
+      document.getElementById('stat-banned').textContent = users.filter(u => u.status === 'banned').length;
+      document.getElementById('stat-violations').textContent = users.reduce((s, u) => s + (u.rate_limit_violations || 0), 0);
+    }
+
+    // ── Combined "Pending Approval" stat = pending registrations + pending
+    //    package upgrade requests (kept in sync with both header badges).
+    function updatePendingApprovalStat() {
+      const pendingRegistrations = (allPendingUsers || []).length;
+      const pendingUpgrades = (allUpgradeRequests || []).filter(r => r.status === 'pending').length;
+      const pendingEl = document.getElementById('stat-pending');
+      if (pendingEl) pendingEl.textContent = pendingRegistrations + pendingUpgrades;
+    }
+
+    // ── Analytics Visualizer (Chart.js) ──────────────────────────────────────
+    let packageChartInstance = null;
+    let statusChartInstance = null;
+
+    function renderAnalyticsCharts(users) {
+      if (!window.Chart || !users || !Array.isArray(users)) return;
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#94a3b8' : '#475569';
+      const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
+      // 1. Package Breakdown
+      const freeCount = users.filter(u => (u.package || 'free').toLowerCase() === 'free').length;
+      const proCount = users.filter(u => (u.package || '').toLowerCase() === 'pro').length;
+      const entCount = users.filter(u => (u.package || '').toLowerCase() === 'enterprise').length;
+
+      const totalPkgEl = document.getElementById('pkg-chart-total');
+      if (totalPkgEl) totalPkgEl.textContent = `${users.length} Users Total`;
+
+      const pkgCanvas = document.getElementById('packageChart');
+      if (pkgCanvas) {
+        if (packageChartInstance) packageChartInstance.destroy();
+        packageChartInstance = new Chart(pkgCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Free Tier', 'Pro Tier', 'Enterprise Tier'],
+            datasets: [{
+              data: [freeCount, proCount, entCount],
+              backgroundColor: ['#64748b', '#6366f1', '#f59e0b'],
+              borderColor: isDark ? '#111827' : '#ffffff',
+              borderWidth: 2,
+              hoverOffset: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: textColor, font: { family: 'Inter', size: 11, weight: '500' }, boxWidth: 12, padding: 12 }
+              }
+            },
+            cutout: '68%'
+          }
+        });
+      }
+
+      // 2. Today's Active Users & Mining Activity
+      function parseDateSafe(dateStr) {
+        if (!dateStr) return null;
+        if (dateStr instanceof Date) return isNaN(dateStr.getTime()) ? null : dateStr;
+        const normalized = (typeof dateStr === 'string' && dateStr.includes(' ') && !dateStr.includes('T'))
+          ? dateStr.replace(' ', 'T')
+          : dateStr;
+        const d = new Date(normalized);
+        return isNaN(d.getTime()) ? null : d;
+      }
+
+      function isDateToday(dateStr) {
+        const d = parseDateSafe(dateStr);
+        if (!d) return false;
+        const now = new Date();
+        return d.getDate() === now.getDate() &&
+               d.getMonth() === now.getMonth() &&
+               d.getFullYear() === now.getFullYear();
+      }
+
+      function shouldResetDailyCreditsClient(lastCreditReset) {
+        if (!lastCreditReset) return true;
+        const lastReset = parseDateSafe(lastCreditReset);
+        if (!lastReset) return true;
+        const now = new Date();
+        const cutoff = new Date(now);
+        cutoff.setHours(1, 0, 0, 0);
+        if (now.getHours() < 1) {
+          cutoff.setDate(cutoff.getDate() - 1);
+        }
+        return lastReset < cutoff;
+      }
+
+      const effectiveUsers = users.map(u => {
+        const isResetDue = shouldResetDailyCreditsClient(u.last_credit_reset);
+        const effectiveCredits = isResetDue ? 0 : (parseInt(u.used_credits_today, 10) || 0);
+        return {
+          ...u,
+          used_credits_effective: effectiveCredits
+        };
+      });
+
+      const todayUsers = effectiveUsers.filter(u => (u.used_credits_effective > 0) || isDateToday(u.last_login));
+      // Sort: highest credits used today first, then most recent login
+      todayUsers.sort((a, b) => {
+        if ((b.used_credits_effective || 0) !== (a.used_credits_effective || 0)) {
+          return (b.used_credits_effective || 0) - (a.used_credits_effective || 0);
+        }
+        const timeA = a.last_login ? (parseDateSafe(a.last_login)?.getTime() || 0) : 0;
+        const timeB = b.last_login ? (parseDateSafe(b.last_login)?.getTime() || 0) : 0;
+        return timeB - timeA;
+      });
+
+      const dailyBadge = document.getElementById('daily-active-badge');
+      const dailyContainer = document.getElementById('daily-users-container');
+
+      if (dailyBadge) {
+        const totalCreditsToday = todayUsers.reduce((sum, u) => sum + (u.used_credits_effective || 0), 0);
+        dailyBadge.textContent = `${todayUsers.length} Active (${totalCreditsToday} Credits Mined Today)`;
+      }
+
+      if (dailyContainer) {
+        if (todayUsers.length === 0) {
+          dailyContainer.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:var(--text-muted); text-align:center; font-size:12px; padding:20px 10px;">
+              <i class="fa-solid fa-clock-rotate-left" style="font-size:26px; margin-bottom:8px; opacity:0.4;"></i>
+              <p style="margin:0; font-weight:600;">No user activity recorded yet today.</p>
+              <span style="font-size:11px; opacity:0.7; margin-top:2px;">User logins and active lead mining will show here live.</span>
+            </div>
+          `;
+        } else {
+          dailyContainer.innerHTML = todayUsers.map(u => {
+            const used = u.used_credits_effective || 0;
+            const maxCr = u.daily_credits || 50;
+            const loginDate = parseDateSafe(u.last_login);
+            const lastTime = loginDate ? loginDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Today';
+            const initials = escapeHtml((u.name || u.email || 'U').substring(0, 2).toUpperCase());
+            const pkgColor = u.package === 'enterprise' ? '#f59e0b' : (u.package === 'pro' ? '#6366f1' : '#64748b');
+
+            return `
+              <div style="background:var(--bg-input); border:1px solid var(--border); border-radius:8px; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; gap:10px; transition:var(--transition-fast);">
+                <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+                  <div style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, ${pkgColor}, #3b82f6); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; flex-shrink:0;">
+                    ${initials}
+                  </div>
+                  <div style="min-width:0; overflow:hidden;">
+                    <div style="font-size:12px; font-weight:600; color:var(--text-heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(u.name) || 'User'}</div>
+                    <div style="font-size:10px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(u.email)}</div>
+                  </div>
+                </div>
+                <div style="text-align:right; flex-shrink:0;">
+                  <div style="font-size:11px; font-weight:700; color:#22c55e;"><i class="fa-solid fa-bolt"></i> ${used} <span style="font-size:10px; color:var(--text-muted); font-weight:400;">/ ${maxCr} cr</span></div>
+                  <div style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> ${lastTime}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    // ── Load users from API
+    async function loadUsers(isSilent = false) {
+      const icon = document.getElementById('refresh-icon');
+      if (icon && !isSilent) icon.classList.add('fa-spin');
+      const errAlert = document.getElementById('error-alert');
+      if (errAlert && !isSilent) errAlert.style.display = 'none';
+
+      const startTime = Date.now();
+
+      try {
+        const res = await fetch(`${API_BASE}/users?_t=${Date.now()}`, { headers: ADMIN_HEADERS, cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        allUsers = data.users || [];
+        const searchInput = document.getElementById('search-input');
+        const q = (searchInput ? searchInput.value : '').trim();
+        const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : '';
+        const pkgFilter = document.getElementById('filter-package') ? document.getElementById('filter-package').value : '';
+
+        if (q || statusFilter || pkgFilter) {
+          applyUserFilters();
+        } else {
+          currentFilteredUsers = allUsers;
+          renderTable(allUsers);
+        }
+        updateStats(allUsers);
+        renderAnalyticsCharts(allUsers);
+
+        const ms = Date.now() - startTime;
+        const footerTime = document.getElementById('footer-time');
+        if (footerTime) footerTime.textContent = `Fetched in ${ms}ms — ${new Date().toLocaleTimeString()}`;
+
+        // API connected
+        const statusBadge = document.getElementById('api-status-badge');
+        if (statusBadge) {
+          statusBadge.style.background = 'rgba(34,211,165,0.1)';
+          statusBadge.style.borderColor = 'rgba(34,211,165,0.25)';
+        }
+        const statusText = document.getElementById('api-status-text');
+        if (statusText) statusText.textContent = 'API Connected';
+        const dot = document.querySelector('.api-status .dot');
+        if (dot) dot.style.background = 'var(--success)';
+        const apiStat = document.querySelector('.api-status');
+        if (apiStat) apiStat.style.color = 'var(--success)';
+
+      } catch (err) {
+        if (!isSilent) {
+          console.error(err);
+          if (errAlert) {
+            document.getElementById('error-msg').textContent = `Cannot connect to API at ${API_BASE}. Make sure the server is running. Error: ${err.message}`;
+            errAlert.style.display = 'flex';
+          }
+          const statusText = document.getElementById('api-status-text');
+          if (statusText) statusText.textContent = 'API Offline';
+          const dot = document.querySelector('.api-status .dot');
+          if (dot) dot.style.background = 'var(--danger)';
+          const apiStat = document.querySelector('.api-status');
+          if (apiStat) {
+            apiStat.style.color = 'var(--danger)';
+            apiStat.style.borderColor = 'rgba(255,71,87,0.25)';
+            apiStat.style.background = 'rgba(255,71,87,0.1)';
+          }
+          const tbody = document.getElementById('table-body');
+          if (tbody) tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fa-solid fa-plug-circle-xmark"></i><p>Failed to load users. Is the API server running on port 3000?</p></div></td></tr>`;
+          const footerCount = document.getElementById('footer-count');
+          if (footerCount) footerCount.textContent = 'Connection failed';
+        }
+      } finally {
+        if (icon && !isSilent) icon.classList.remove('fa-spin');
+      }
+    }
+
+    // ── Set user status
+    async function setStatus(id, status) {
+      try {
+        let res = await fetch(`${API_BASE}/users/${id}/status`, {
+          method: 'POST',
+          headers: ADMIN_HEADERS,
+          body: JSON.stringify({ status })
+        });
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/${id}/status`, {
+            method: 'PATCH',
+            headers: ADMIN_HEADERS,
+            body: JSON.stringify({ status })
+          });
+        }
+        const data = await res.json();
+        if (data.success) {
+          toast(`User #${id} status set to "${status}"`, 'success');
+          loadUsers();
+        } else {
+          toast(data.message || 'Failed', 'error');
+        }
+      } catch (err) {
+        toast('API Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── Reset violations
+    async function resetViolations(id) {
+      try {
+        let res = await fetch(`${API_BASE}/users/${id}/reset`, { method: 'POST', headers: ADMIN_HEADERS });
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/${id}/reset`, { method: 'PATCH', headers: ADMIN_HEADERS });
+        }
+        const data = await res.json();
+        if (data.success) {
+          toast(`Violations reset for user #${id}`, 'success');
+          loadUsers();
+        } else {
+          toast(data.message || 'Failed', 'error');
+        }
+      } catch (err) {
+        toast('API Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── Delete user
+    async function deleteUser(id) {
+      const u = (allUsers || []).find(x => x.id === id) || (currentFilteredUsers || []).find(x => x.id === id);
+      const name = u ? u.name : `#${id}`;
+      if (!confirm(`Delete user "${name}" (#${id})? This cannot be undone.`)) return;
+      try {
+        let res = await fetch(`${API_BASE}/users/${id}/delete`, { method: 'POST', headers: ADMIN_HEADERS });
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE', headers: ADMIN_HEADERS });
+        }
+        const data = await res.json();
+        if (data.success) {
+          toast(`User "${escapeHtml(name)}" deleted successfully.`, 'success');
+          loadUsers();
+        } else {
+          toast(data.message || 'Failed', 'error');
+        }
+      } catch (err) {
+        toast('API Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── Change User Package & Daily Credits Limit
+    async function changeUserPackage(id, currentPkg, currentCredits) {
+      const newPkg = prompt(`Set Package for User #${id}:\nOptions: free, pro, enterprise`, currentPkg);
+      if (!newPkg) return;
+
+      const pkgLower = newPkg.trim().toLowerCase();
+      if (!['free', 'pro', 'enterprise'].includes(pkgLower)) {
+        toast('Invalid package! Choose free, pro, or enterprise.', 'error');
+        return;
+      }
+
+      const defaultCr = pkgLower === 'free' ? 50 : pkgLower === 'pro' ? 1000 : 999999;
+      const customCrStr = prompt(`Set Custom Daily Credits Limit for User #${id} (${pkgLower.toUpperCase()}):\nDefault for ${pkgLower} is ${defaultCr}`, currentCredits || defaultCr);
+      if (customCrStr === null) return;
+
+      const customCredits = parseInt(customCrStr, 10) || defaultCr;
+
+      try {
+        let res = await fetch(`${API_BASE}/users/${id}/package`, {
+          method: 'POST',
+          headers: ADMIN_HEADERS,
+          body: JSON.stringify({ package: pkgLower, customCredits })
+        });
+        if (!res.ok) {
+          res = await fetch(`${API_BASE}/users/${id}/package`, {
+            method: 'PATCH',
+            headers: ADMIN_HEADERS,
+            body: JSON.stringify({ package: pkgLower, customCredits })
+          });
+        }
+        const data = await res.json();
+        if (data.success) {
+          toast(data.message, 'success');
+          loadUsers();
+        } else {
+          toast(data.message || 'Failed', 'error');
+        }
+      } catch (err) {
+        toast('API Error: ' + err.message, 'error');
+      }
+    }
+
+    // ── Announcement Manager
+    async function loadAnnouncement() {
+      try {
+        const res = await fetch(`${API_BASE}/announcement`);
+        const data = await res.json();
+        if (data.success && data.announcement) {
+          document.getElementById('announcement-input').value = data.announcement;
+        }
+      } catch (e) { }
+    }
+
+    async function publishAnnouncement() {
+      const msg = (document.getElementById('announcement-input').value || '').trim();
+      try {
+        const res = await fetch(`${API_BASE}/announcement`, {
+          method: 'POST',
+          headers: ADMIN_HEADERS,
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast('System Announcement Published Live!', 'success');
+        }
+      } catch (err) {
+        toast('API Error: ' + err.message, 'error');
+      }
+    }
+
+    async function clearAnnouncement() {
+      document.getElementById('announcement-input').value = '';
+      publishAnnouncement();
+    }
+
+    // ── Load Activity Audit Logs
+    function renderActivityLogsTable() {
+      const tbody = document.getElementById('logs-table-body');
+      const footer = document.getElementById('logs-table-footer');
+      const footerCount = document.getElementById('logs-footer-count');
+      const seeMoreContainer = document.getElementById('logs-see-more-container');
+
+      const q = (logsSearchQuery || '').trim().toLowerCase();
+      const filteredLogs = !q ? (allActivityLogs || []) : (allActivityLogs || []).filter(l =>
+        (l.user_email || '').toLowerCase().includes(q) ||
+        (l.action || '').toLowerCase().includes(q) ||
+        (l.details || '').toLowerCase().includes(q)
+      );
+
+      if (!filteredLogs || filteredLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:20px;color:var(--text-muted);">${q ? 'No activity logs match your search.' : 'No activity logs recorded yet.'}</td></tr>`;
+        if (footer) footer.style.display = 'none';
+        return;
+      }
+
+      if (footer) footer.style.display = 'flex';
+      const toRender = filteredLogs.slice(0, logsDisplayLimit);
+
+      tbody.innerHTML = toRender.map(l => {
+        let actionBadge = `<span class="status-badge active">${l.action}</span>`;
+        if (l.action === 'MINING_SESSION') {
+          actionBadge = `<span class="status-badge" style="background:rgba(108,99,255,0.15);color:#a78bfa;border:1px solid rgba(108,99,255,0.35);font-weight:700;"><i class="fa-solid fa-coins" style="color:#ffb347;"></i> MINING</span>`;
+        } else if (l.action === 'LOGIN') {
+          actionBadge = `<span class="status-badge" style="background:rgba(0,210,255,0.15);color:#00d2ff;border:1px solid rgba(0,210,255,0.3);font-weight:700;"><i class="fa-solid fa-right-to-bracket"></i> LOGIN</span>`;
+        } else if (l.action === 'REGISTER') {
+          actionBadge = `<span class="status-badge" style="background:rgba(46,213,115,0.15);color:#2ed573;border:1px solid rgba(46,213,115,0.3);font-weight:700;"><i class="fa-solid fa-user-plus"></i> REGISTER</span>`;
+        } else if (l.action === 'UPGRADE_REQUEST') {
+          actionBadge = `<span class="status-badge" style="background:rgba(255,179,71,0.15);color:#ffb347;border:1px solid rgba(255,179,71,0.3);font-weight:700;"><i class="fa-solid fa-bolt"></i> UPGRADE</span>`;
+        } else if (l.action === 'UPDATE_PACKAGE') {
+          actionBadge = `<span class="status-badge" style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.3);font-weight:700;"><i class="fa-solid fa-sliders"></i> PLAN_UPDATE</span>`;
+        }
+
+        // Highlight details for mining session (escape first, then apply trusted highlight markup)
+        let formattedDetails = escapeHtml(l.details || '');
+        if (formattedDetails.includes('Deducted:')) {
+          formattedDetails = formattedDetails.replace(/(Deducted:\s*-\d+\s*Credits?)/i, '<strong style="color:#ff4757;background:rgba(255,71,87,0.1);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,71,87,0.25);">$1</strong>');
+        } else if (l.action === 'MINING_SESSION' && formattedDetails.includes('Mined')) {
+          formattedDetails = formattedDetails.replace(/Mined\s*(\d+)\s*URL\(s\)/i, 'Mined $1 URL(s) | <strong style="color:#ff4757;background:rgba(255,71,87,0.1);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,71,87,0.25);">Deducted: -$1 Credits</strong>');
+        }
+
+        return `
+          <tr>
+            <td class="td-id">#${l.id}</td>
+            <td class="td-email"><strong>${escapeHtml(l.user_email) || 'System'}</strong></td>
+            <td>${actionBadge}</td>
+            <td>${formattedDetails}</td>
+            <td class="td-datetime">${fmtDate(l.created_at)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (footerCount) footerCount.textContent = `Showing ${toRender.length} of ${filteredLogs.length} logs${q ? ' (filtered)' : ''}`;
+
+      if (seeMoreContainer) {
+        let btnsHtml = '';
+        if (filteredLogs.length > logsDisplayLimit) {
+          const remaining = filteredLogs.length - logsDisplayLimit;
+          btnsHtml += `<button class="btn-see-more" onclick="showMoreLogs()"><i class="fa-solid fa-chevron-down"></i> See More (+${Math.min(10, remaining)})</button>`;
+          btnsHtml += `<button class="btn-see-more" onclick="showAllLogs()"><i class="fa-solid fa-angles-down"></i> See All (${filteredLogs.length})</button>`;
+        } else if (logsDisplayLimit > 10 && filteredLogs.length > 10) {
+          btnsHtml += `<button class="btn-see-less" onclick="showLessLogs()"><i class="fa-solid fa-chevron-up"></i> Show Less (10)</button>`;
+        }
+        seeMoreContainer.innerHTML = btnsHtml;
+      }
+    }
+
+    function showMoreLogs() {
+      logsDisplayLimit += 10;
+      renderActivityLogsTable();
+    }
+
+    function showAllLogs() {
+      logsDisplayLimit = allActivityLogs.length;
+      renderActivityLogsTable();
+    }
+
+    function showLessLogs() {
+      logsDisplayLimit = 10;
+      renderActivityLogsTable();
+    }
+
+    async function loadActivityLogs(isSilent = false) {
+      const icon = document.getElementById('logs-refresh-icon');
+      if (icon && !isSilent) icon.classList.add('fa-spin');
+      try {
+        const res = await fetch(`${API_BASE}/activity-logs?_t=${Date.now()}`, { headers: ADMIN_HEADERS, cache: 'no-store' });
+        const data = await res.json();
+        allActivityLogs = (data.success && data.logs) ? data.logs : [];
+        renderActivityLogsTable();
+      } catch (err) {
+        if (!isSilent) console.error(err);
+      } finally {
+        if (icon && !isSilent) icon.classList.remove('fa-spin');
+      }
+    }
+
+    // ── Load New User Registration Approval Requests
+    function renderPendingUsersTable() {
+      const tbody = document.getElementById('pending-users-table-body');
+      const footer = document.getElementById('pending-users-table-footer');
+      const footerCount = document.getElementById('pending-users-footer-count');
+      const seeMoreContainer = document.getElementById('pending-users-see-more-container');
+
+      if (!allPendingUsers || allPendingUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted);">No pending user registration requests.</td></tr>`;
+        if (footer) footer.style.display = 'none';
+        return;
+      }
+
+      if (footer) footer.style.display = 'flex';
+      const toRender = allPendingUsers.slice(0, pendingUsersDisplayLimit);
+
+      tbody.innerHTML = toRender.map(u => {
+        const pkgBadge = u.package === 'enterprise'
+          ? '<span class="pkg-badge ent">ENTERPRISE</span>'
+          : u.package === 'pro'
+            ? '<span class="pkg-badge pro">PRO</span>'
+            : '<span class="package-badge free">FREE</span>';
+
+        const statusBadge = '<span class="status-badge pending"><i class="fa-solid fa-clock"></i> Pending</span>';
+
+        const actionBtns = `
+          <div style="display:flex;gap:6px;">
+            <button class="btn-action primary" onclick="handlePendingUserAction(${u.id}, 'approve')" style="background:rgba(34,197,94,0.15);color:#22c55e;border-color:rgba(34,197,94,0.3);"><i class="fa-solid fa-check"></i> Approve</button>
+            <button class="btn-action danger" onclick="handlePendingUserAction(${u.id}, 'reject')"><i class="fa-solid fa-xmark"></i> Reject</button>
+          </div>
+        `;
+
+        return `
+          <tr>
+            <td class="td-id">#${u.id}</td>
+            <td class="td-name"><strong>${escapeHtml(u.name) || 'User'}</strong></td>
+            <td class="td-email">${escapeHtml(u.email)}</td>
+            <td>${pkgBadge}</td>
+            <td>${statusBadge}</td>
+            <td class="td-datetime">${fmtDate(u.created_at)}</td>
+            <td>${actionBtns}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (footerCount) footerCount.textContent = `Showing ${toRender.length} of ${allPendingUsers.length} requests`;
+
+      if (seeMoreContainer) {
+        let btnsHtml = '';
+        if (allPendingUsers.length > pendingUsersDisplayLimit) {
+          const remaining = allPendingUsers.length - pendingUsersDisplayLimit;
+          btnsHtml += `<button class="btn-see-more" onclick="showMorePendingUsers()"><i class="fa-solid fa-chevron-down"></i> See More (+${Math.min(10, remaining)})</button>`;
+          btnsHtml += `<button class="btn-see-more" onclick="showAllPendingUsers()"><i class="fa-solid fa-angles-down"></i> See All (${allPendingUsers.length})</button>`;
+        } else if (pendingUsersDisplayLimit > 10 && allPendingUsers.length > 10) {
+          btnsHtml += `<button class="btn-see-less" onclick="showLessPendingUsers()"><i class="fa-solid fa-chevron-up"></i> Show Less (10)</button>`;
+        }
+        seeMoreContainer.innerHTML = btnsHtml;
+      }
+    }
+
+    function showMorePendingUsers() {
+      pendingUsersDisplayLimit += 10;
+      renderPendingUsersTable();
+    }
+
+    function showAllPendingUsers() {
+      pendingUsersDisplayLimit = allPendingUsers.length;
+      renderPendingUsersTable();
+    }
+
+    function showLessPendingUsers() {
+      pendingUsersDisplayLimit = 10;
+      renderPendingUsersTable();
+    }
+
+    async function loadPendingUsers(isSilent = false) {
+      const icon = document.getElementById('pending-users-refresh-icon');
+      if (icon && !isSilent) icon.classList.add('fa-spin');
+      try {
+        const res = await fetch(`${API_BASE}/pending-users?_t=${Date.now()}`, { headers: ADMIN_HEADERS, cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          allPendingUsers = (data.success && data.requests) ? data.requests : [];
+        } else {
+          allPendingUsers = (allUsers || []).filter(u => u.status === 'pending');
+        }
+        renderPendingUsersTable();
+
+        // Update live pending badge — always visible, shows 0 when none pending
+        const badge = document.getElementById('badge-pending-registrations');
+        if (badge) {
+          badge.textContent = `${allPendingUsers.length} PENDING`;
+          badge.style.display = 'inline-block';
+        }
+      } catch (err) {
+        if (!isSilent) console.error(err);
+        allPendingUsers = (allUsers || []).filter(u => u.status === 'pending');
+        renderPendingUsersTable();
+      } finally {
+        updatePendingApprovalStat();
+        if (icon && !isSilent) icon.classList.remove('fa-spin');
+      }
+    }
+
+    async function handlePendingUserAction(id, action) {
+      if (!confirm(`Are you sure you want to ${action} this registration request?`)) return;
+      try {
+        let res = await fetch(`${API_BASE}/pending-users/${id}/action`, {
+          method: 'POST',
+          headers: ADMIN_HEADERS,
+          body: JSON.stringify({ action })
+        });
+        if (!res.ok) {
+          const newStatus = action === 'approve' ? 'active' : 'banned';
+          res = await fetch(`${API_BASE}/users/${id}/status`, {
+            method: 'POST',
+            headers: ADMIN_HEADERS,
+            body: JSON.stringify({ status: newStatus })
+          });
+        }
+        const data = await res.json();
+        if (data.success) {
+          toast(data.message || `User registration ${action}d successfully!`, 'success');
+          loadPendingUsers();
+          loadUsers();
+          loadActivityLogs();
+        } else {
+          toast(data.message || 'Action failed', 'error');
+        }
+      } catch (e) {
+        toast('Network error performing user approval action', 'error');
+      }
+    }
+
+    // ── Load Package Upgrade Requests
+    function renderUpgradeRequestsTable() {
+      const tbody = document.getElementById('upgrades-table-body');
+      const footer = document.getElementById('upgrades-table-footer');
+      const footerCount = document.getElementById('upgrades-footer-count');
+      const seeMoreContainer = document.getElementById('upgrades-see-more-container');
+
+      if (!allUpgradeRequests || allUpgradeRequests.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:20px;color:var(--text-muted);">No upgrade requests pending.</td></tr>`;
+        if (footer) footer.style.display = 'none';
+        return;
+      }
+
+      if (footer) footer.style.display = 'flex';
+      const toRender = allUpgradeRequests.slice(0, upgradesDisplayLimit);
+
+      tbody.innerHTML = toRender.map(r => {
+        const statusBadge = r.status === 'approved'
+          ? '<span class="status-badge active"><i class="fa-solid fa-circle-check"></i> Approved</span>'
+          : r.status === 'rejected'
+            ? '<span class="status-badge banned"><i class="fa-solid fa-circle-xmark"></i> Rejected</span>'
+            : '<span class="status-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);"><i class="fa-solid fa-clock"></i> Pending</span>';
+
+        const pkgBadge = r.requested_package === 'enterprise'
+          ? '<span class="pkg-badge ent">ENTERPRISE (Unlimited)</span>'
+          : '<span class="pkg-badge pro">PRO (1,000 / day)</span>';
+
+        const actionBtns = r.status === 'pending' ? `
+          <div style="display:flex;gap:6px;">
+            <button class="btn-action primary" onclick="handleUpgradeAction(${r.id}, 'approve')" style="background:rgba(34,197,94,0.15);color:#22c55e;border-color:rgba(34,197,94,0.3);"><i class="fa-solid fa-check"></i> Approve</button>
+            <button class="btn-action danger" onclick="handleUpgradeAction(${r.id}, 'reject')"><i class="fa-solid fa-xmark"></i> Reject</button>
+          </div>
+        ` : '<span style="color:var(--text-muted);font-size:12px;">Completed</span>';
+
+        return `
+          <tr>
+            <td class="td-id">#${r.id}</td>
+            <td class="td-name"><strong>${escapeHtml(r.user_name) || 'User'}</strong></td>
+            <td class="td-email">${escapeHtml(r.user_email)}</td>
+            <td>${pkgBadge}</td>
+            <td>${statusBadge}</td>
+            <td class="td-datetime">${fmtDate(r.created_at)}</td>
+            <td>${actionBtns}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (footerCount) footerCount.textContent = `Showing ${toRender.length} of ${allUpgradeRequests.length} requests`;
+
+      if (seeMoreContainer) {
+        let btnsHtml = '';
+        if (allUpgradeRequests.length > upgradesDisplayLimit) {
+          const remaining = allUpgradeRequests.length - upgradesDisplayLimit;
+          btnsHtml += `<button class="btn-see-more" onclick="showMoreUpgrades()"><i class="fa-solid fa-chevron-down"></i> See More (+${Math.min(10, remaining)})</button>`;
+          btnsHtml += `<button class="btn-see-more" onclick="showAllUpgrades()"><i class="fa-solid fa-angles-down"></i> See All (${allUpgradeRequests.length})</button>`;
+        } else if (upgradesDisplayLimit > 10 && allUpgradeRequests.length > 10) {
+          btnsHtml += `<button class="btn-see-less" onclick="showLessUpgrades()"><i class="fa-solid fa-chevron-up"></i> Show Less (10)</button>`;
+        }
+        seeMoreContainer.innerHTML = btnsHtml;
+      }
+    }
+
+    function showMoreUpgrades() {
+      upgradesDisplayLimit += 10;
+      renderUpgradeRequestsTable();
+    }
+
+    function showAllUpgrades() {
+      upgradesDisplayLimit = allUpgradeRequests.length;
+      renderUpgradeRequestsTable();
+    }
+
+    function showLessUpgrades() {
+      upgradesDisplayLimit = 10;
+      renderUpgradeRequestsTable();
+    }
+
+    async function loadUpgradeRequests(isSilent = false) {
+      const icon = document.getElementById('upgrades-refresh-icon');
+      if (icon && !isSilent) icon.classList.add('fa-spin');
+      try {
+        const res = await fetch(`${API_BASE}/upgrade-requests?_t=${Date.now()}`, { headers: ADMIN_HEADERS, cache: 'no-store' });
+        const data = await res.json();
+        allUpgradeRequests = (data.success && data.requests) ? data.requests : [];
+        renderUpgradeRequestsTable();
+
+        // Update live pending badge — always visible, shows 0 when none pending
+        const pendingCount = allUpgradeRequests.filter(r => r.status === 'pending').length;
+        const badge = document.getElementById('badge-pending-upgrades');
+        if (badge) {
+          badge.textContent = `${pendingCount} PENDING`;
+          badge.style.display = 'inline-block';
+        }
+      } catch (err) {
+        if (!isSilent) console.error(err);
+      } finally {
+        updatePendingApprovalStat();
+        if (icon && !isSilent) icon.classList.remove('fa-spin');
+      }
+    }
+
+    // ── Live Auto-Sync for Admin Dashboard (Syncs audit logs, users, pending & upgrades every 5s automatically)
+    function autoSyncAdminDataLive() {
+      const isAuth = localStorage.getItem('lgs_admin_auth') === 'true' || sessionStorage.getItem('lgs_admin_auth') === 'true';
+      const dashboard = document.getElementById('admin-dashboard-container');
+      if (isAuth && dashboard && dashboard.style.display !== 'none') {
+        loadActivityLogs(true);
+        loadPendingUsers(true);
+        loadUpgradeRequests(true);
+        loadUsers(true);
+      }
+    }
+    setInterval(autoSyncAdminDataLive, 5000);
+
+    async function handleUpgradeAction(id, action) {
+      if (!confirm(`Are you sure you want to ${action} this upgrade request?`)) return;
+      try {
+        const res = await fetch(`${API_BASE}/upgrade-requests/${id}/action`, {
+          method: 'POST',
+          headers: ADMIN_HEADERS,
+          body: JSON.stringify({ action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast(data.message, 'success');
+          loadUpgradeRequests();
+          loadUsers();
+          loadActivityLogs();
+        } else {
+          toast(data.message || 'Action failed', 'error');
+        }
+      } catch (e) {
+        toast('Network error performing upgrade action', 'error');
+      }
+    }
+
+    // ── Search & Multi-Filter Controller
+    function applyUserFilters() {
+      const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      const statusFilter = (document.getElementById('filter-status') ? document.getElementById('filter-status').value : '').toLowerCase();
+      const pkgFilter = (document.getElementById('filter-package') ? document.getElementById('filter-package').value : '').toLowerCase();
+
+      usersDisplayLimit = 10; // reset to 10 on filter change
+
+      const filtered = allUsers.filter(u => {
+        const matchesQ = !q || (
+          (u.name || '').toLowerCase().includes(q) ||
+          (u.email || '').toLowerCase().includes(q) ||
+          String(u.id).includes(q)
+        );
+        const matchesStatus = !statusFilter || (u.status || '').toLowerCase() === statusFilter;
+        const matchesPkg = !pkgFilter || (u.package || '').toLowerCase() === pkgFilter;
+
+        return matchesQ && matchesStatus && matchesPkg;
+      });
+
+      renderTable(filtered);
+    }
+
+    document.getElementById('search-input').addEventListener('input', applyUserFilters);
+    const filterStatusEl = document.getElementById('filter-status');
+    const filterPkgEl = document.getElementById('filter-package');
+    if (filterStatusEl) filterStatusEl.addEventListener('change', applyUserFilters);
+    if (filterPkgEl) filterPkgEl.addEventListener('change', applyUserFilters);
+
+    // ── Activity Logs Search ───────────────────────────────────────────────
+    const logsSearchEl = document.getElementById('logs-search-input');
+    if (logsSearchEl) {
+      logsSearchEl.addEventListener('input', () => {
+        logsSearchQuery = logsSearchEl.value;
+        logsDisplayLimit = 10;
+        renderActivityLogsTable();
+      });
+    }
+
+    // ── Users Table: Select-All & Bulk Actions ─────────────────────────────
+    const selectAllEl = document.getElementById('select-all-users');
+    if (selectAllEl) {
+      selectAllEl.addEventListener('change', () => {
+        // Select/deselect every user matching the current filter, not just
+        // the rows currently rendered on screen — see syncSelectAllCheckbox().
+        if (selectAllEl.checked) {
+          currentFilteredUsers.forEach(u => selectedUserIds.add(u.id));
+        } else {
+          currentFilteredUsers.forEach(u => selectedUserIds.delete(u.id));
+        }
+        // Reflect the change on whichever row checkboxes are actually rendered.
+        document.querySelectorAll('#table-body .row-select-checkbox').forEach(cb => {
+          const id = parseInt(cb.dataset.id, 10);
+          cb.checked = selectedUserIds.has(id);
+        });
+        syncSelectAllCheckbox();
+        updateBulkActionsBar();
+      });
+    }
+
+    // Runs `worker` over `items` in fixed-size concurrent batches instead of
+    // firing every request at once, so a large bulk selection (hundreds of
+    // users) doesn't saturate the backend or the browser's per-host
+    // connection limit and cause otherwise-healthy requests to time out.
+    async function runInBatches(items, batchSize, worker) {
+      const results = [];
+      for (let i = 0; i < items.length; i += batchSize) {
+        const batch = items.slice(i, i + batchSize);
+        const batchResults = await Promise.allSettled(batch.map(worker));
+        results.push(...batchResults);
+      }
+      return results;
+    }
+
+    const BULK_ACTION_BATCH_SIZE = 8;
+
+    async function bulkSetStatus(ids, status) {
+      const results = await runInBatches(ids, BULK_ACTION_BATCH_SIZE, async (id) => {
+        let res = await fetch(`${API_BASE}/users/${id}/status`, { method: 'POST', headers: ADMIN_HEADERS, body: JSON.stringify({ status }) });
+        if (!res.ok) res = await fetch(`${API_BASE}/users/${id}/status`, { method: 'PATCH', headers: ADMIN_HEADERS, body: JSON.stringify({ status }) });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res;
+      });
+      return results.filter(r => r.status === 'fulfilled').length;
+    }
+
+    async function bulkDeleteUsers(ids) {
+      const results = await runInBatches(ids, BULK_ACTION_BATCH_SIZE, async (id) => {
+        let res = await fetch(`${API_BASE}/users/${id}/delete`, { method: 'POST', headers: ADMIN_HEADERS });
+        if (!res.ok) res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE', headers: ADMIN_HEADERS });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res;
+      });
+      return results.filter(r => r.status === 'fulfilled').length;
+    }
+
+    const btnBulkBan = document.getElementById('btn-bulk-ban');
+    if (btnBulkBan) {
+      btnBulkBan.addEventListener('click', async () => {
+        const ids = Array.from(selectedUserIds);
+        if (ids.length === 0) return;
+        if (!confirm(`Ban ${ids.length} selected user(s)? They will lose access immediately.`)) return;
+        btnBulkBan.disabled = true;
+        const successCount = await bulkSetStatus(ids, 'banned');
+        btnBulkBan.disabled = false;
+        toast(`${successCount} of ${ids.length} user(s) banned.`, successCount === ids.length ? 'success' : 'error');
+        selectedUserIds.clear();
+        loadUsers();
+      });
+    }
+
+    const btnBulkDelete = document.getElementById('btn-bulk-delete');
+    if (btnBulkDelete) {
+      btnBulkDelete.addEventListener('click', async () => {
+        const ids = Array.from(selectedUserIds);
+        if (ids.length === 0) return;
+        if (!confirm(`Permanently delete ${ids.length} selected user(s)? This cannot be undone.`)) return;
+        btnBulkDelete.disabled = true;
+        const successCount = await bulkDeleteUsers(ids);
+        btnBulkDelete.disabled = false;
+        toast(`${successCount} of ${ids.length} user(s) deleted.`, successCount === ids.length ? 'success' : 'error');
+        selectedUserIds.clear();
+        loadUsers();
+      });
+    }
+
+    const btnBulkClear = document.getElementById('btn-bulk-clear');
+    if (btnBulkClear) {
+      btnBulkClear.addEventListener('click', () => {
+        selectedUserIds.clear();
+        document.querySelectorAll('#table-body .row-select-checkbox').forEach(cb => cb.checked = false);
+        syncSelectAllCheckbox();
+        updateBulkActionsBar();
+      });
+    }
+
+    // ── Users Table: Export CSV ─────────────────────────────────────────────
+    function csvField(val) {
+      let s = (val === null || val === undefined) ? '' : String(val);
+      // Prevent CSV/formula injection (OWASP-recommended mitigation): a value
+      // that starts with =, +, -, @, tab, or CR is treated by Excel/Sheets as
+      // a formula when opened — a user-controlled name/email could otherwise
+      // execute arbitrary formulas in the admin's spreadsheet app. Prefixing
+      // a single quote forces it to be read back as plain, literal text.
+      if (/^[=+\-@\t\r]/.test(s)) {
+        s = "'" + s;
+      }
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+
+    // Shared CSV-download helper: builds the file from a header row + array
+    // of row arrays (each field already run through csvField()) and triggers
+    // a browser download.
+    function downloadCsv(filenamePrefix, headers, rowsOfFields) {
+      const lines = [headers.map(csvField).join(',')];
+      rowsOfFields.forEach(fields => lines.push(fields.map(csvField).join(',')));
+      const csvContent = '﻿' + lines.join('\r\n'); // BOM for Excel UTF-8 compatibility
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    const btnExportCsv = document.getElementById('btn-export-users-csv');
+    if (btnExportCsv) {
+      btnExportCsv.addEventListener('click', () => {
+        const rows = currentFilteredUsers && currentFilteredUsers.length ? currentFilteredUsers : allUsers;
+        if (!rows || rows.length === 0) {
+          toast('No users to export.', 'error');
+          return;
+        }
+        const headers = ['ID', 'Name', 'Email', 'Package', 'Daily Credits', 'Used Today', 'Remaining', 'Status', 'Violations', 'Last Login', 'Created At'];
+        const dataRows = rows.map(u => {
+          const total = u.daily_credits || 50;
+          const used = u.used_credits_today || 0;
+          const remaining = Math.max(0, total - used);
+          return [
+            u.id, u.name || '', u.email || '', u.package || 'free', total, used, remaining,
+            u.status || '', u.rate_limit_violations || 0, u.last_login || '', u.created_at || ''
+          ];
+        });
+        downloadCsv('users-export', headers, dataRows);
+        toast(`Exported ${rows.length} user(s) to CSV.`, 'success');
+      });
+    }
+
+    const btnExportLogsCsv = document.getElementById('btn-export-logs-csv');
+    if (btnExportLogsCsv) {
+      btnExportLogsCsv.addEventListener('click', () => {
+        const q = (logsSearchQuery || '').trim().toLowerCase();
+        const rows = !q ? (allActivityLogs || []) : (allActivityLogs || []).filter(l =>
+          (l.user_email || '').toLowerCase().includes(q) ||
+          (l.action || '').toLowerCase().includes(q) ||
+          (l.details || '').toLowerCase().includes(q)
+        );
+        if (!rows || rows.length === 0) {
+          toast('No activity logs to export.', 'error');
+          return;
+        }
+        const headers = ['ID', 'User Email', 'Action', 'Details', 'Timestamp'];
+        const dataRows = rows.map(l => [l.id, l.user_email || 'System', l.action || '', l.details || '', l.created_at || '']);
+        downloadCsv('activity-logs-export', headers, dataRows);
+        toast(`Exported ${rows.length} log(s) to CSV.`, 'success');
+      });
+    }
+
+
+    // ── Theme System: OS Auto Sync on Load + Manual Toggle on Click ──────────
+    (function initThemeSystem() {
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btnTheme = document.getElementById('btn-theme');
+        const btnAuthTheme = document.getElementById('btn-auth-theme');
+
+        [btnTheme, btnAuthTheme].forEach(btn => {
+          if (!btn) return;
+          if (theme === 'dark') {
+            // 🌙 Dark Mode — cool indigo/purple glow
+            btn.innerHTML = '<i class="fa-solid fa-moon" style="color:#a78bfa;"></i> Dark';
+            btn.title = 'Dark Mode — Click for Light';
+            btn.style.background = 'rgba(109,90,255,0.22)';
+            btn.style.border = '1.5px solid rgba(167,139,250,0.6)';
+            btn.style.color = '#a78bfa';
+            btn.style.boxShadow = '0 0 14px rgba(109,90,255,0.45)';
+          } else {
+            // ☀️ Light Mode — warm amber/orange glow
+            btn.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i> Light';
+            btn.title = 'Light Mode — Click for Dark';
+            btn.style.background = 'rgba(251,191,36,0.18)';
+            btn.style.border = '1.5px solid rgba(251,191,36,0.7)';
+            btn.style.color = '#f59e0b';
+            btn.style.boxShadow = '0 0 14px rgba(251,191,36,0.4)';
+          }
+          btn.style.cursor = 'pointer';
+          btn.style.pointerEvents = 'auto';
+        });
+
+        // Update charts if data exists
+        if (typeof allUsers !== 'undefined' && allUsers.length > 0 && typeof renderAnalyticsCharts === 'function') {
+          renderAnalyticsCharts(allUsers);
+        }
+      }
+
+      // Page load: load saved preference or fall back to OS theme
+      const osTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      const currentTheme = localStorage.getItem('lgs_theme') || osTheme;
+      applyTheme(currentTheme);
+
+      // Live OS listener (only if user hasn't explicitly set a custom theme preference)
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const onOSChange = (e) => {
+          if (!localStorage.getItem('lgs_theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onOSChange);
+        else if (mq.addListener) mq.addListener(onOSChange);
+      }
+
+      // Button click: manually toggle Light ↔ Dark
+      const toggleTheme = () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = (current === 'dark') ? 'light' : 'dark';
+        localStorage.setItem('lgs_theme', next);
+        applyTheme(next);
+      };
+
+      const btnTheme = document.getElementById('btn-theme');
+      const btnAuthTheme = document.getElementById('btn-auth-theme');
+      if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+      if (btnAuthTheme) btnAuthTheme.addEventListener('click', toggleTheme);
+
+      // ── Admin Authentication Controller ─────────────────────────────────────
+      function initAdminAuth() {
+        const authOverlay = document.getElementById('admin-auth-overlay');
+        const dashboardContainer = document.getElementById('admin-dashboard-container');
+        const loginForm = document.getElementById('admin-login-form');
+        const emailInput = document.getElementById('admin-login-email');
+        const passInput = document.getElementById('admin-login-password');
+        const btnTogglePass = document.getElementById('btn-toggle-admin-pass');
+        const btnSubmit = document.getElementById('btn-admin-submit');
+        const errorBox = document.getElementById('admin-auth-error');
+        const errorText = document.getElementById('admin-auth-error-text');
+        const authCard = document.getElementById('admin-auth-card');
+        const btnLogout = document.getElementById('btn-admin-logout');
+
+        function showAuthError(msg) {
+          if (errorText) errorText.textContent = msg || 'Invalid Admin Email or Password!';
+          if (errorBox) errorBox.style.display = 'flex';
+          if (authCard) {
+            authCard.classList.remove('shake-anim');
+            void authCard.offsetWidth;
+            authCard.classList.add('shake-anim');
+          }
+        }
+
+        function hideAuthError() {
+          if (errorBox) errorBox.style.display = 'none';
+        }
+
+        if (btnTogglePass && passInput) {
+          btnTogglePass.addEventListener('click', () => {
+            const type = passInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passInput.setAttribute('type', type);
+            btnTogglePass.className = type === 'password' ? 'fa-solid fa-eye toggle-pass' : 'fa-solid fa-eye-slash toggle-pass';
+          });
+        }
+
+        if (btnLogout) {
+          btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('lgs_admin_auth');
+            localStorage.removeItem('lgs_admin_secret');
+            sessionStorage.removeItem('lgs_admin_auth');
+            sessionStorage.removeItem('lgs_admin_secret');
+            toast('Admin logged out successfully.', 'info');
+            if (dashboardContainer) dashboardContainer.style.display = 'none';
+            if (authOverlay) authOverlay.style.display = 'flex';
+            if (passInput) passInput.value = '';
+            isAdminHumanVerified = false;
+            if (adminRecaptchaBox) {
+              adminRecaptchaBox.classList.remove('verified');
+              adminRecaptchaBox.setAttribute('aria-checked', 'false');
+              if (adminRecaptchaLabel) adminRecaptchaLabel.textContent = "I'm not a robot";
+            }
+            hideAuthError();
+          });
+        }
+
+        // ── Human Verification Interactive Handler for Admin ─────────────────
+        let isAdminHumanVerified = false;
+        const adminRecaptchaBox = document.getElementById('admin-recaptcha-box');
+        const adminHumanVerifyCard = document.getElementById('admin-human-verify-card');
+        const adminRecaptchaLabel = document.getElementById('admin-recaptcha-label');
+
+        if (adminRecaptchaBox) {
+          function triggerAdminVerification() {
+            if (isAdminHumanVerified || adminRecaptchaBox.classList.contains('verifying')) return;
+            adminRecaptchaBox.classList.add('verifying');
+            if (adminRecaptchaLabel) adminRecaptchaLabel.textContent = 'Verifying...';
+
+            setTimeout(() => {
+              adminRecaptchaBox.classList.remove('verifying');
+              adminRecaptchaBox.classList.add('verified');
+              adminRecaptchaBox.setAttribute('aria-checked', 'true');
+              if (adminRecaptchaLabel) adminRecaptchaLabel.textContent = "I'm not a robot";
+              isAdminHumanVerified = true;
+              if (adminHumanVerifyCard) adminHumanVerifyCard.style.borderColor = 'var(--border-subtle)';
+              hideAuthError();
+            }, 550);
+          }
+
+          adminRecaptchaBox.addEventListener('click', triggerAdminVerification);
+          adminRecaptchaBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              triggerAdminVerification();
+            }
+          });
+        }
+
+        if (loginForm) {
+          loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideAuthError();
+
+            const email = (emailInput ? emailInput.value : '').trim().toLowerCase();
+            const password = passInput ? passInput.value : '';
+
+            if (!email || !password) {
+              return showAuthError('Please enter both Admin Email and Password.');
+            }
+
+            if (!isAdminHumanVerified) {
+              if (adminHumanVerifyCard) {
+                adminHumanVerifyCard.style.borderColor = '#ff4757';
+                adminHumanVerifyCard.classList.remove('shake-anim');
+                void adminHumanVerifyCard.offsetWidth;
+                adminHumanVerifyCard.classList.add('shake-anim');
+              }
+              return showAuthError('Please check the "I\'m not a robot" box to verify you are human.');
+            }
+
+            if (btnSubmit) {
+              btnSubmit.disabled = true;
+              btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Verifying...</span>';
+            }
+
+            try {
+              const res = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+              });
+
+              const data = await res.json();
+
+              if (res.ok && data.success) {
+                localStorage.setItem('lgs_admin_auth', 'true');
+                sessionStorage.setItem('lgs_admin_auth', 'true');
+                if (data.adminToken) {
+                  localStorage.setItem('lgs_admin_secret', data.adminToken);
+                  sessionStorage.setItem('lgs_admin_secret', data.adminToken);
+                  ADMIN_HEADERS['x-admin-secret'] = data.adminToken;
+                  ADMIN_HEADERS['Authorization'] = `Bearer ${data.adminToken}`;
+                }
+
+                toast('Super Admin Authentication Verified! Welcome.', 'success');
+                if (authOverlay) authOverlay.style.display = 'none';
+                if (dashboardContainer) dashboardContainer.style.display = 'block';
+
+                startInactivityTracker();
+
+                loadUsers();
+                loadPendingUsers();
+                loadAnnouncement();
+                loadActivityLogs();
+                loadUpgradeRequests();
+              } else {
+                showAuthError(data.message || 'Invalid Admin Email or Password!');
+              }
+            } catch (err) {
+              console.error('Admin Login Error:', err);
+              showAuthError('Server connection error');
+            } finally {
+              if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-unlock-keyhole"></i> <span>Unlock Admin Panel</span>';
+              }
+            }
+          });
+        }
+
+        // ── 🛡️ Inactivity Auto-Logout (20 Minutes) ─────────────────────────────
+        let inactivityTimer = null;
+        const INACTIVITY_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+
+        function resetInactivityTimer() {
+          const isAuthed = localStorage.getItem('lgs_admin_auth') === 'true' || sessionStorage.getItem('lgs_admin_auth') === 'true';
+          if (!isAuthed) return;
+          if (inactivityTimer) clearTimeout(inactivityTimer);
+          inactivityTimer = setTimeout(() => {
+            forceAdminLogoutDueToServerOffline('Session closed due to 20 minutes of inactivity.');
+            toast('Admin session logged out due to inactivity.', 'info');
+          }, INACTIVITY_TIMEOUT_MS);
+        }
+
+        function startInactivityTracker() {
+          ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+            window.addEventListener(evt, resetInactivityTimer, { passive: true });
+          });
+          resetInactivityTimer();
+        }
+
+        // ── Server Health & Admin Session Heartbeat (Every 4 seconds) ─────────
+        function forceAdminLogoutDueToServerOffline(errMsg) {
+          localStorage.removeItem('lgs_admin_auth');
+          localStorage.removeItem('lgs_admin_secret');
+          sessionStorage.removeItem('lgs_admin_auth');
+          sessionStorage.removeItem('lgs_admin_secret');
+          if (inactivityTimer) clearTimeout(inactivityTimer);
+
+          allUsers = [];
+          allPendingUsers = [];
+          allActivityLogs = [];
+          allUpgradeRequests = [];
+
+          const tbody = document.getElementById('table-body');
+          if (tbody) tbody.innerHTML = '';
+          const pendingTbody = document.getElementById('pending-users-table-body');
+          if (pendingTbody) pendingTbody.innerHTML = '';
+          const logsTbody = document.getElementById('logs-table-body');
+          if (logsTbody) logsTbody.innerHTML = '';
+          const upgTbody = document.getElementById('upgrades-table-body');
+          if (upgTbody) upgTbody.innerHTML = '';
+
+          if (dashboardContainer) dashboardContainer.style.display = 'none';
+          if (authOverlay) authOverlay.style.display = 'flex';
+
+          showAuthError(errMsg || 'Server is OFF!');
+          toast('Server is OFF!', 'error');
+        }
+
+        window.forceAdminLogoutDueToServerOffline = forceAdminLogoutDueToServerOffline;
+
+        async function checkAdminServerHeartbeat() {
+          const isCurrentlyAuth = localStorage.getItem('lgs_admin_auth') === 'true' || sessionStorage.getItem('lgs_admin_auth') === 'true';
+          if (!isCurrentlyAuth) return;
+
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 3000);
+
+          try {
+            const res = await fetch(`${API_BASE}/users`, {
+              headers: ADMIN_HEADERS,
+              signal: controller.signal
+            });
+            clearTimeout(timer);
+
+            if (!res.ok) {
+              if (res.status === 401 || res.status === 403 || res.status >= 500) {
+                forceAdminLogoutDueToServerOffline('Server is OFF!');
+              }
+            }
+          } catch (err) {
+            clearTimeout(timer);
+            console.warn('[Admin Heartbeat] Server unreachable / offline:', err.message);
+            forceAdminLogoutDueToServerOffline('Server is OFF!');
+          }
+        }
+
+        // Check server health every 4 seconds
+        setInterval(checkAdminServerHeartbeat, 4000);
+
+        // Check existing persistent session from browser storage
+        const isAuth = localStorage.getItem('lgs_admin_auth') === 'true' || sessionStorage.getItem('lgs_admin_auth') === 'true';
+        if (isAuth) {
+          const savedSecret = localStorage.getItem('lgs_admin_secret') || sessionStorage.getItem('lgs_admin_secret');
+          if (savedSecret) {
+            ADMIN_HEADERS['x-admin-secret'] = savedSecret;
+            ADMIN_HEADERS['Authorization'] = `Bearer ${savedSecret}`;
+          }
+
+          startInactivityTracker();
+
+          // Perform initial verification check before showing dashboard
+          fetch(`${API_BASE}/users`, { headers: ADMIN_HEADERS })
+            .then(res => {
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              return res.json();
+            })
+            .then(data => {
+              if (authOverlay) authOverlay.style.display = 'none';
+              if (dashboardContainer) dashboardContainer.style.display = 'block';
+
+              allUsers = data.users || [];
+              currentFilteredUsers = allUsers;
+              renderTable(allUsers);
+              updateStats(allUsers);
+              loadPendingUsers();
+              loadAnnouncement();
+              loadActivityLogs();
+              loadUpgradeRequests();
+            })
+            .catch(err => {
+              console.error('Initial admin auth check failed:', err);
+              forceAdminLogoutDueToServerOffline('Server is OFF!');
+            });
+        } else {
+          if (authOverlay) authOverlay.style.display = 'flex';
+          if (dashboardContainer) dashboardContainer.style.display = 'none';
+        }
+      }
+
+      // Init Admin Auth Controller on load
+      initAdminAuth();
+    })();
+  </script>
+</body>
+
+</html>

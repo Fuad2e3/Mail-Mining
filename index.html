@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EmailFinder – Find Professional Email Addresses</title>
+  <meta name="description" content="Generate professional email patterns and explore email verification results with EmailFinder. Fast, accurate, and easy to use.">
+  <meta property="og:title" content="EmailFinder – Find Professional Email Addresses">
+  <meta property="og:description" content="Generate professional email patterns and explore email verification results with EmailFinder.">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<!-- ── Site Header ───────────────────────────────────────── -->
+<header class="site-header" role="banner">
+  <div class="container">
+    <a href="./index.html" class="site-logo" aria-label="EmailFinder home">
+      <div class="site-logo__icon"><i data-lucide="at-sign"></i></div>
+      <span class="site-logo__name">EmailFinder</span>
+    </a>
+    <nav class="site-nav" id="nav-menu" role="navigation" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="site-header__actions">
+      <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme" aria-pressed="true">
+        <i data-lucide="sun"></i>
+      </button>
+      <span id="nav-auth-slot" style="display:inline-flex;gap:.5rem;align-items:center;">
+        <a href="./login.html" class="btn btn--ghost btn--sm">Sign In</a>
+        <a href="./login.html?tab=signup" class="btn btn--primary btn--sm">Get Started</a>
+      </span>
+      <button id="nav-toggle" class="hamburger" aria-expanded="false" aria-controls="nav-menu" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Hero ──────────────────────────────────────────────── -->
+<section class="hero" aria-label="Hero">
+  <div class="container">
+    <div class="hero__inner">
+      <div class="hero__text">
+        <div class="hero__eyebrow"><i data-lucide="zap"></i> Frontend Demo</div>
+        <h1>Find the right professional email.</h1>
+        <p class="hero__sub">Generate likely professional email patterns and explore verification results from one simple workspace.</p>
+        <div class="hero__btns">
+          <a href="./finder.html" class="btn btn--primary btn--lg"><i data-lucide="search"></i> Find an Email</a>
+          <a href="./dashboard.html" class="btn btn--outline btn--lg"><i data-lucide="layout-dashboard"></i> Try Demo</a>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="hero__demo-card card--glass">
+          <div class="hero__demo-header">Live Preview</div>
+          <div class="hero__demo-inputs">
+            <div class="hero__demo-input">👤 John Smith</div>
+            <div class="hero__demo-input">🌐 abctech.com</div>
+          </div>
+          <div class="hero__demo-result">
+            <div class="hero__demo-email">john.smith@abctech.com</div>
+            <div class="hero__demo-badges">
+              <span class="badge badge--valid">Valid</span>
+              <span class="conf-pill conf--very-high">96% Confidence</span>
+            </div>
+          </div>
+          <div style="margin-top:1rem;">
+            <div style="font-size:.78rem;color:var(--text-3);margin-bottom:.5rem;">Other candidates</div>
+            <div style="display:flex;flex-direction:column;gap:.35rem;">
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+                <span style="font-family:monospace;">johnsmith@abctech.com</span>
+                <span class="badge badge--unknown" style="font-size:.7rem;">Unknown</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border);">
+                <span style="font-family:monospace;">j.smith@abctech.com</span>
+                <span class="badge badge--valid" style="font-size:.7rem;">Valid</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;">
+                <span style="font-family:monospace;">jsmith@abctech.com</span>
+                <span class="badge badge--unknown" style="font-size:.7rem;">Unknown</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;padding:.6rem;background:var(--amber-bg);border-radius:var(--radius-sm);font-size:.75rem;color:var(--amber);text-align:center;">
+            ⚠️ DEMO MODE — Results are simulated
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ──────────────────────────────────────────── -->
+<section class="features" id="features" aria-labelledby="features-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><i data-lucide="sparkles"></i> What We Offer</div>
+      <h2 id="features-heading">Everything you need for email discovery</h2>
+      <p>A complete toolkit for finding and exploring professional email patterns — all in your browser.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:var(--primary-bg)"><i data-lucide="search" style="color:var(--primary)"></i></div>
+        <h3>Email Pattern Finder</h3>
+        <p>Generate common professional email patterns from a person's name and company domain with intelligent scoring.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:var(--green-bg)"><i data-lucide="check-circle" style="color:var(--green)"></i></div>
+        <h3>Verification Simulation</h3>
+        <p>Explore simulated verification results including syntax, domain, MX, SMTP, and catch-all detection signals.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:var(--cyan-bg)"><i data-lucide="layers" style="color:var(--cyan)"></i></div>
+        <h3>Bulk Finder</h3>
+        <p>Upload CSV files and process them entirely in your browser. No data ever leaves your device.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:var(--amber-bg)"><i data-lucide="bar-chart-2" style="color:var(--amber)"></i></div>
+        <h3>Confidence Scoring</h3>
+        <p>Each candidate receives a transparent confidence score based on multiple independent quality signals.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:rgba(168,85,247,.12)"><i data-lucide="history" style="color:#a855f7"></i></div>
+        <h3>Search History</h3>
+        <p>All recent searches are automatically saved in your browser for quick reference and re-use.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon" style="background:var(--green-bg)"><i data-lucide="download" style="color:var(--green)"></i></div>
+        <h3>CSV Export</h3>
+        <p>Download your results as a clean, well-formatted CSV file generated directly in the browser.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ───────────────────────────────────────── -->
+<section class="how-it-works" id="how-it-works" aria-labelledby="hiw-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><i data-lucide="list-ordered"></i> Simple Process</div>
+      <h2 id="hiw-heading">How It Works</h2>
+      <p>Go from a name to a ranked list of email candidates in seconds.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-card__num">01</div>
+        <h3>Enter Person Details</h3>
+        <p>Provide the first name, last name, and optionally the company domain to improve accuracy.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-card__num">02</div>
+        <h3>Generate Email Candidates</h3>
+        <p>The engine creates all common professional email patterns using proven naming conventions.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-card__num">03</div>
+        <h3>Analyze Candidates</h3>
+        <p>Each candidate is scored against syntax, domain, and multiple deliverability signals.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-card__num">04</div>
+        <h3>View Best Match</h3>
+        <p>The highest-confidence candidate is highlighted with a full breakdown of all signals.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FAQ ───────────────────────────────────────────────── -->
+<section class="faq" id="faq" aria-labelledby="faq-heading">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><i data-lucide="help-circle"></i> FAQ</div>
+      <h2 id="faq-heading">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          Is this a real email verification service?
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="faq-answer">No — EmailFinder is currently a frontend-only demo. All verification results are simulated using heuristic scoring. No real SMTP, DNS, or MX lookups are performed. This is clearly indicated throughout the interface.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          Does my CSV data leave my device?
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="faq-answer">Absolutely not. All CSV processing happens locally in your browser using the FileReader API. No data is transmitted to any server.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          What email patterns are generated?
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="faq-answer">EmailFinder generates 12 common professional patterns including: first.last, firstlast, f.last, flast, first, last, last.first, first_last, first.l, firstl, fl, and more. All patterns are normalized for special characters.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          Where is my search history stored?
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="faq-answer">Search history is saved in your browser's localStorage only. It never leaves your device. You can clear it anytime from the History page or Settings.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" role="button" tabindex="0" aria-expanded="false">
+          Will there be a real backend?
+          <i data-lucide="chevron-down"></i>
+        </div>
+        <div class="faq-answer">This frontend demonstrates the full UX of a future EmailFinder SaaS platform. A real backend with live DNS/MX/SMTP verification, user accounts, and credit billing is planned for a future release.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────── -->
+<section class="cta-section" aria-label="Call to action">
+  <div class="container">
+    <h2>Ready to find professional emails?</h2>
+    <p>Start with our free demo — no signup required.</p>
+    <div class="cta-btns">
+      <a href="./finder.html" class="btn btn--primary btn--lg"><i data-lucide="search"></i> Find an Email</a>
+      <a href="./bulk-finder.html" class="btn btn--outline btn--lg"><i data-lucide="layers"></i> Try Bulk Finder</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────── -->
+<footer class="site-footer" role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="./index.html" class="site-logo">
+          <div class="site-logo__icon"><i data-lucide="at-sign"></i></div>
+          <span class="site-logo__name">EmailFinder</span>
+        </a>
+        <p>Find professional email patterns faster. A frontend demo of a future SaaS platform.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="./finder.html">Email Finder</a></li>
+          <li><a href="./verification.html">Verify Email</a></li>
+          <li><a href="./bulk-finder.html">Bulk Finder</a></li>
+          <li><a href="./pricing.html">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="./api.html">API Docs</a></li>
+          <li><a href="./history.html">History</a></li>
+          <li><a href="./dashboard.html">Dashboard</a></li>
+          <li><a href="./settings.html">Settings</a></li>
+          <li><a href="./admin.html">Admin Portal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="./privacy.html">Privacy Policy</a></li>
+          <li><a href="./terms.html">Terms of Service</a></li>
+          <li><a href="./security.html">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 EmailFinder. All rights reserved.</span>
+      <span class="demo-pill">Frontend Demo Only</span>
+    </div>
+  </div>
+</footer>
+
+<script src="./js/mock-data.js"></script>
+<script src="./js/main.js"></script>
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const open = item.classList.toggle('open');
+      q.setAttribute('aria-expanded', open);
+    });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); q.click(); } });
+  });
+
+  // Auth Awareness in Nav
+  (function () {
+    const isAuth = localStorage.getItem('lgs_auth') === 'true' || sessionStorage.getItem('lgs_auth') === 'true';
+    const slot = document.getElementById('nav-auth-slot');
+    if (isAuth && slot) {
+      slot.innerHTML = `
+        <a href="./dashboard.html" class="btn btn--ghost btn--sm"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="./finder.html" class="btn btn--primary btn--sm"><i data-lucide="search"></i> Find Email</a>
+      `;
+      if (window.lucide) lucide.createIcons({ nodes: [slot] });
+    }
+  })();
+</script>
+</body>
+</html>

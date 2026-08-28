@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded
+    // into. GitHub Pages serves static files with no way to set the
+    // X-Frame-Options header, and CSP's frame-ancestors directive is not
+    // honored via <meta> — so this JS-level guard is the only defense
+    // available on this hosting platform.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+
+    if (localStorage.getItem('lgs_auth') !== 'true' && sessionStorage.getItem('lgs_auth') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <script src="assets/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#0a0b0f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f8f9fc" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <title>EmailFinder - Lead & Data Mining Engine</title>
+  <meta name="description"
+    content="Automated Web Data Mining Tool. Extract Emails, Phones, Social Links, and Page Content at scale.">
+  <meta name="author" content="EmailFinder Team">
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" integrity="sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js" integrity="sha384-vuyrTV5nkscLp1knFvt+FIHfKKzmROBq5reruhMRslauj54mW+l2B8b6szMN6lCL" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+
+
+  <link rel="stylesheet" href="assets/app-ui.css?v=20260828">
+</head>
+
+<body>
+
+  <div class="app-shell">
+
+    <!-- ── Sidebar ────────────────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Sidebar navigation">
+      <a href="index.html" class="sidebar__logo">
+        <div class="sidebar__logo-icon"><i class="fa-solid fa-at"></i></div>
+        <div>
+          <span class="sidebar__logo-name" data-i18n="app_title">EmailFinder</span>
+          <span class="sidebar__logo-sub">Lead Miner</span>
+        </div>
+      </a>
+
+      <nav class="sidebar__nav">
+        <div class="nav-section">
+          <div class="nav-section-label">Workspace</div>
+          <a href="#sec-input" class="nav-link active"><i class="fa-solid fa-file-import"></i> Input URLs</a>
+          <a href="#sec-params" class="nav-link"><i class="fa-solid fa-sliders"></i> Parameters</a>
+          <a href="#sec-progress" class="nav-link"><i class="fa-solid fa-bolt"></i> Live Progress</a>
+          <a href="#sec-console" class="nav-link"><i class="fa-solid fa-terminal"></i> Mining Console</a>
+          <a href="#sec-results" class="nav-link"><i class="fa-solid fa-table-list"></i> Data Grid</a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-label">Resources</div>
+          <a href="dashboard.html" class="nav-link"><i class="fa-solid fa-at"></i> EmailFinder App</a>
+          <a href="index.html" class="nav-link"><i class="fa-solid fa-house"></i> Home</a>
+          <a href="privacy.html" class="nav-link"><i class="fa-solid fa-shield-halved"></i> Privacy</a>
+          <a href="terms.html" class="nav-link"><i class="fa-solid fa-file-contract"></i> Terms</a>
+        </div>
+      </nav>
+
+      <div class="sidebar__footer">
+        <div class="sidebar__user">
+          <div class="sidebar__avatar"><i class="fa-solid fa-user"></i></div>
+          <div class="sidebar__user-meta">
+            <span class="badge-v2" id="header-user-badge">Lead Gen</span>
+            <div class="sidebar__user-plan">Mining Workspace</div>
+          </div>
+        </div>
+
+        <div id="header-credit-badge" class="credit-badge">
+          <div class="credit-badge-row">
+            <span class="credit-badge-label"><i class="fa-solid fa-coins" style="color:#f59e0b;"></i> <span id="lbl-user-credits">Credits: 50 /
+                50</span></span>
+            <span id="lbl-user-credit-pct" class="credit-badge-pct">100%</span>
+          </div>
+          <div class="credit-badge-track">
+            <div id="credit-progress-fill" class="credit-badge-fill"></div>
+          </div>
+        </div>
+
+        <button id="btn-upgrade-plan" class="btn btn-primary btn-xs btn-upgrade" title="Request Package Upgrade">
+          <i class="fa-solid fa-bolt"></i> <span>Upgrade Plan</span>
+        </button>
+      </div>
+    </aside>
+    <div id="sidebar-overlay"></div>
+
+    <!-- ── Main column ────────────────────────────────────────────────── -->
+    <div class="main-content">
+
+      <header class="topbar">
+        <button class="hamburger" data-sidebar-toggle aria-expanded="false" aria-controls="sidebar"
+          aria-label="Open sidebar">
+          <span></span><span></span><span></span>
+        </button>
+        <span class="topbar__title">Mining Console</span>
+
+        <div class="topbar__actions">
+          <button id="btn-lang" class="icon-btn" title="Switch Language">
+            <i class="fa-solid fa-language"></i> <span id="lang-label" class="header-utility-label">English</span>
+          </button>
+          <button id="btn-theme" class="icon-btn" title="Toggle Light/Dark Theme">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <label id="sound-toggle-pill" class="icon-btn" title="Sound Chime: On (click to mute)">
+            <input type="checkbox" id="chk-sound" checked class="sr-only-checkbox">
+            <i id="sound-toggle-icon" class="fa-solid fa-bell"></i>
+          </label>
+          <span class="header-divider" aria-hidden="true"></span>
+          <button id="btn-logout" class="icon-btn btn-logout" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </header>
+
+
+      <main class="page-body">
+
+        <div class="page-header">
+          <h1>Web Data Mining</h1>
+          <p>Extract company details, contacts, and page content from any list of websites.</p>
+        </div>
+
+        <!-- Live System Announcement Banner -->
+        <div id="system-announcement-banner" class="quick-status-banner announcement-banner" style="display: none;">
+          <div class="announcement-banner-content">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span id="announcement-banner-text">Welcome to EmailFinder!</span>
+          </div>
+          <button class="announcement-banner-close" onclick="document.getElementById('system-announcement-banner').style.display='none';"><i
+              class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="top-dashboard-section">
+
+          <div class="grid-layout-2col">
+
+            <div class="card" id="sec-input">
+              <div class="card-header card-header-compact flex-between">
+                <h3><i class="fa-solid fa-file-import"></i> <span data-i18n="input_heading">1. Input Website URLs</span>
+                </h3>
+                <div class="input-stats-pills">
+                  <span class="stat-pill"><i class="fa-solid fa-globe"></i> <span id="detected-urls-count">0</span>
+                    URLs</span>
+                  <span id="duplicate-warning" class="stat-pill warning hidden"><i
+                      class="fa-solid fa-clone"></i> <span id="duplicates-count">0</span> Dups</span>
+                </div>
+              </div>
+
+              <div class="card-body card-body-compact">
+                <div class="dropzone dropzone-compact" id="file-dropzone">
+                  <input type="file" id="file-input" accept=".txt,.csv,.xlsx,.xls,.tsv"
+                    onchange="if(this.files && this.files.length && window.handleFileSelectGlobal) window.handleFileSelectGlobal(this.files[0]);"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 5;">
+                  <div style="position: relative; z-index: 1; pointer-events: none;">
+                    <i class="fa-solid fa-cloud-arrow-up dropzone-icon"></i>
+                    <p class="dropzone-text" data-i18n="dropzone_msg">Drag &
+                      Drop <strong>.txt</strong>, <strong>.csv</strong>, or <strong>.xlsx</strong> file here</p>
+                    <span class="dropzone-or">or</span>
+                    <div class="btn btn-secondary btn-xs dropzone-browse-btn">
+                      <i class="fa-solid fa-folder-open"></i> <span data-i18n="browse_btn">Browse Files</span>
+                    </div>
+                  </div>
+                  <div id="file-info" class="file-info-badge file-info-badge-onlayer hidden">
+                    <i class="fa-solid fa-file-csv"></i> <span id="file-name">filename.csv</span>
+                    <button id="btn-remove-file" type="button" class="btn-icon"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                </div>
+
+                <div class="form-group url-input-group">
+                  <div class="url-input-header">
+                    <label for="url-textarea"><i
+                        class="fa-solid fa-list-check"></i> <span data-i18n="manual_urls_label">Or Paste URLs/Domains
+                        directly:</span></label>
+                    <span id="url-input-stats" class="url-input-stats-count">Lines: 0</span>
+                  </div>
+                  <textarea id="url-textarea" class="url-textarea-compact" placeholder="https://example.com&#10;mycompany.org&#10;agency.net" rows="6"></textarea>
+
+                  <div class="url-action-bar">
+                    <button type="button" id="btn-paste-clipboard" class="btn btn-secondary btn-xs">
+                      <i class="fa-solid fa-paste color-accent"></i> Paste Clipboard
+                    </button>
+                    <button type="button" id="btn-sample-urls" class="btn btn-secondary btn-xs">
+                      <i class="fa-solid fa-lightbulb color-warning"></i> Load Samples
+                    </button>
+                    <button type="button" id="btn-clear-urls" class="btn btn-secondary btn-xs">
+                      <i class="fa-solid fa-trash-can color-danger"></i> Clear
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="card" id="sec-params">
+              <div class="card-header card-header-compact flex-between">
+                <h3><i class="fa-solid fa-square-check"></i> <span data-i18n="options_heading">2. Extraction
+                    Parameters</span></h3>
+                <button id="btn-select-all-params" class="btn btn-secondary btn-xs btn-deselect-all" title="Click to deselect all parameters">&#9745; Deselect All</button>
+              </div>
+              <div class="card-body card-body-compact">
+                <!-- 🏢 1. Business Intelligence & Details -->
+                <div class="options-section">
+                  <h4 class="section-title"><i
+                      class="fa-solid fa-building color-primary"></i> Business Intelligence</h4>
+                  <div class="checkbox-grid checkbox-grid-compact">
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-company-name" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-signature color-accent"></i> Company Name</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-industry" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-briefcase color-warning"></i> Business Category</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-company-size" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-users color-primary"></i> Company Size</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-year-founded" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-calendar-check color-success"></i> Year Founded</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 📍 2. Contact & Location Details -->
+                <div class="options-section">
+                  <h4 class="section-title"><i
+                      class="fa-solid fa-address-card color-accent"></i> Contact & Location Details</h4>
+                  <div class="checkbox-grid checkbox-grid-compact">
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-phone" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-phone color-accent"></i> Phones</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-email" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-envelope color-primary"></i> Emails</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-address" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-location-dot color-danger"></i> Street Address</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-social" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-share-nodes color-success"></i> Social Links</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 📄 3. Page Content & Offerings -->
+                <div class="options-section">
+                  <h4 class="section-title"><i
+                      class="fa-solid fa-file-lines color-warning"></i> Page Content & Offerings</h4>
+                  <div class="checkbox-grid checkbox-grid-compact">
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-services-products" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-boxes-stacked color-warning"></i> Services & Products</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-home" checked>
+                      <span class="checkmark"></span>
+                      <span>Homepage Text</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-about" checked>
+                      <span class="checkmark"></span>
+                      <span>About Us Section</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-contact" checked>
+                      <span class="checkmark"></span>
+                      <span>Contact Us Section</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-services" checked>
+                      <span class="checkmark"></span>
+                      <span>Services Section</span>
+                    </label>
+                    <label class="custom-checkbox custom-checkbox-compact">
+                      <input type="checkbox" id="chk-skip-dup" checked>
+                      <span class="checkmark"></span>
+                      <span><i class="fa-solid fa-filter color-warning"></i> Skip Duplicates</span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+
+          <div class="card margin-top-sm" id="sec-progress">
+            <div class="automation-top-bar automation-top-bar-compact">
+              <div class="session-info">
+                <h2 class="session-info-title"><i class="fa-solid fa-bolt color-warning"></i> <span
+                    data-i18n="live_tracker_title">Live Execution Progress</span></h2>
+                <span id="session-status-badge" class="badge badge-idle">Idle</span>
+              </div>
+
+              <div class="session-controls">
+                <button id="btn-pause" class="btn btn-warning btn-xs hidden"><i class="fa-solid fa-pause"></i> Pause</button>
+                <button id="btn-resume" class="btn btn-success btn-xs hidden"><i class="fa-solid fa-play"></i> Resume</button>
+                <button id="btn-stop" class="btn btn-danger btn-xs hidden"><i class="fa-solid fa-stop"></i> Stop</button>
+                <button id="btn-retry-failed" class="btn btn-warning btn-xs hidden"><i class="fa-solid fa-rotate-right"></i>
+                  Retry Failed & N/A</button>
+                <button id="btn-restart" class="btn btn-primary btn-xs btn-restart-compact"><i class="fa-solid fa-play"></i> Launch Mining
+                  Session</button>
+                <button id="btn-export-toolbar" class="btn btn-export-primary btn-xs"><i
+                    class="fa-solid fa-file-export"></i> Export Data</button>
+              </div>
+            </div>
+
+            <div class="card-body card-body-compact">
+              <!-- 🔄 Interactive Workflow Pipeline Stepper -->
+              <div class="workflow-pipeline-container" id="workflow-pipeline">
+                <div class="pipeline-step active" id="pipe-step-1">
+                  <div class="step-badge"><i class="fa-solid fa-list-check"></i></div>
+                  <div class="step-info">
+                    <span class="step-num">Step 1</span>
+                    <span class="step-title">URLs Ingested</span>
+                  </div>
+                </div>
+                <div class="pipeline-connector" id="pipe-conn-1"></div>
+                <div class="pipeline-step" id="pipe-step-2">
+                  <div class="step-badge"><i class="fa-solid fa-sliders"></i></div>
+                  <div class="step-info">
+                    <span class="step-num">Step 2</span>
+                    <span class="step-title">Config Ready</span>
+                  </div>
+                </div>
+                <div class="pipeline-connector" id="pipe-conn-2"></div>
+                <div class="pipeline-step" id="pipe-step-3">
+                  <div class="step-badge"><i class="fa-solid fa-network-wired"></i></div>
+                  <div class="step-info">
+                    <span class="step-num">Step 3</span>
+                    <span class="step-title">Scraping Active</span>
+                  </div>
+                </div>
+                <div class="pipeline-connector" id="pipe-conn-3"></div>
+                <div class="pipeline-step" id="pipe-step-4">
+                  <div class="step-badge"><i class="fa-solid fa-trophy"></i></div>
+                  <div class="step-info">
+                    <span class="step-num">Step 4</span>
+                    <span class="step-title">Data Extracted</span>
+                  </div>
+                </div>
+              </div>
+
+              <div id="quick-status" class="quick-status-banner quick-status-inline hidden">
+                <span id="quick-status-icon"><i class="fa-solid fa-spinner fa-spin"></i></span> <span
+                  id="lbl-status-text">Mining in progress...</span>
+              </div>
+
+              <div class="progress-container progress-container-compact margin-top-sm">
+                <div class="progress-metrics progress-metrics-compact">
+                  <span class="metric-text"><span id="lbl-processed-sites">0</span> / <span id="lbl-total-sites">0</span>
+                    Websites Processed</span>
+                  <span id="lbl-percentage" class="metric-percentage metric-percentage-compact">0.0%</span>
+                </div>
+                <div class="progress-bar-bg progress-bar-bg-compact">
+                  <div id="progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-subtext progress-subtext-compact">
+                  <span><i class="fa-solid fa-stopwatch"></i> Elapsed: <strong
+                      id="lbl-elapsed-time">00:00:00</strong></span>
+                </div>
+              </div>
+
+              <div class="stats-counters-grid stats-counters-grid-compact margin-top-sm">
+                <div class="stat-box blue stat-box-compact">
+                  <div class="stat-icon"><i class="fa-solid fa-globe"></i></div>
+                  <div>
+                    <div class="stat-number stat-number-compact" id="stat-total">0</div>
+                    <div class="stat-label stat-label-compact">Total Sites</div>
+                  </div>
+                </div>
+                <div class="stat-box green stat-box-compact">
+                  <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                  <div>
+                    <div class="stat-number stat-number-compact" id="stat-done">0</div>
+                    <div class="stat-label stat-label-compact">Successful</div>
+                  </div>
+                </div>
+                <div class="stat-box red stat-box-compact">
+                  <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                  <div>
+                    <div class="stat-number stat-number-compact" id="stat-error">0</div>
+                    <div class="stat-label stat-label-compact">Failed/Error</div>
+                  </div>
+                </div>
+                <div class="stat-box orange stat-box-compact">
+                  <div class="stat-icon"><i class="fa-solid fa-clone"></i></div>
+                  <div>
+                    <div class="stat-number stat-number-compact" id="stat-skipped">0</div>
+                    <div class="stat-label stat-label-compact">Duplicates Skipped</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 🖥️ Live Real-Time Terminal Log Console -->
+        <div class="card terminal-log-card margin-top-sm" id="terminal-log-card">
+          <div class="card-header card-header-compact flex-between" id="sec-console">
+            <div class="terminal-title-group">
+              <h3 class="terminal-title">
+                <i class="fa-solid fa-terminal color-accent"></i> <span>Live Mining Execution Console</span>
+              </h3>
+              <span class="terminal-pulse-badge"><span class="pulse-dot"></span> Live Stream</span>
+            </div>
+            <div class="terminal-header-actions">
+              <button type="button" id="btn-toggle-autoscroll" class="btn btn-secondary btn-xs" title="Toggle Auto Scroll">
+                <i class="fa-solid fa-arrows-down-to-line"></i> Auto-Scroll: ON
+              </button>
+              <button type="button" id="btn-copy-live-logs" class="btn btn-secondary btn-xs" title="Copy all logs to clipboard">
+                <i class="fa-solid fa-copy"></i> Copy
+              </button>
+              <button type="button" id="btn-clear-live-logs" class="btn btn-secondary btn-xs" title="Clear console output">
+                <i class="fa-solid fa-trash-can"></i> Clear
+              </button>
+              <button type="button" id="btn-collapse-live-logs" class="btn btn-secondary btn-xs" title="Collapse / Expand Terminal">
+                <i class="fa-solid fa-chevron-up"></i>
+              </button>
+            </div>
+          </div>
+          <div class="card-body card-body-compact terminal-body-wrapper" id="terminal-body-wrapper">
+            <div id="console-log" class="live-terminal-log-box">
+              <div class="log-line system">[SYSTEM] ⚡ Smart EmailFinder Lead & Data Mining Engine ready. Paste URLs and launch mining session.</div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="card margin-top-lg" id="sec-results">
+          <div class="card-header flex-between">
+            <h3><i class="fa-solid fa-table-list"></i> <span>Extracted Website Data Grid</span></h3>
+            <div class="table-actions">
+              <input type="text" id="table-search" class="input-sm" placeholder="Search extracted results...">
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table" id="mined-data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Website URL</th>
+                    <th>Status</th>
+                    <th>Company Name</th>
+                    <th>Industry</th>
+                    <th>Company Size</th>
+                    <th>Year Founded</th>
+                    <th>Address</th>
+                    <th>Phones</th>
+                    <th>Emails</th>
+                    <th>Social Links</th>
+                    <th>Services & Products</th>
+                    <th>Homepage</th>
+                    <th>About Us</th>
+                    <th>Contact Us</th>
+                    <th>Services</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body">
+                  <tr>
+                    <td colspan="17" class="table-empty-state">
+                      <i class="fa-solid fa-spider table-empty-icon"></i>
+                      <span class="table-empty-title">No mined data yet</span>
+                      <span class="table-empty-subtext">Click "Launch Mining Session" above to start extracting website data.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Data Grid Pagination & View Controls -->
+            <div id="grid-pagination-container" class="grid-pagination-container">
+              <div id="grid-footer-count" class="grid-footer-count">
+                Showing 0 of 0 websites
+              </div>
+              <div id="grid-see-more-buttons" class="grid-see-more-buttons"></div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+
+  <div class="hidden-background-elements" style="display: none !important;">
+    <select id="proxy-select">
+      <option value="direct" selected></option>
+    </select>
+    <canvas id="status-chart"></canvas>
+    <tbody id="history-table-body"></tbody>
+    <button id="btn-clear-log"></button>
+    <button id="btn-clear-log-visible"></button>
+    <button id="btn-clean-data"></button>
+    <button id="btn-clear-history"></button>
+    <button id="btn-apply-parameters"></button>
+    <input type="text" id="custom-keywords-input" placeholder="Keywords...">
+    <span id="lbl-active-proxy"></span>
+  </div>
+
+
+  <div id="modal-export" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-file-export color-primary"></i> Choose Export File Format</h3>
+        <button class="btn-close" id="btn-close-export"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Scope Option -->
+        <div class="export-scope-row">
+          <label for="export-scope-select" class="export-scope-label">
+            <i class="fa-solid fa-filter color-warning"></i> Export Scope:
+          </label>
+          <select id="export-scope-select" class="input-sm export-scope-select">
+            <option value="all" selected>All Extracted Rows</option>
+            <option value="search">Active Search Filter Results Only</option>
+          </select>
+        </div>
+
+        <p class="export-modal-desc">Export extracted website details into your preferred file
+          format with complete full-length text:</p>
+
+        <div class="export-grid margin-top-sm">
+          <button class="export-card" id="export-excel">
+            <i class="fa-solid fa-file-excel color-excel"></i>
+            <strong>Excel (.xlsx)</strong>
+            <span>Full text auto-fit</span>
+          </button>
+          <button class="export-card" id="export-csv">
+            <i class="fa-solid fa-file-csv color-csv"></i>
+            <strong>CSV (.csv)</strong>
+            <span>Spreadsheet (UTF-8)</span>
+          </button>
+          <button class="export-card" id="export-pdf">
+            <i class="fa-solid fa-file-pdf color-pdf"></i>
+            <strong>PDF Report (.pdf)</strong>
+            <span>Printable document</span>
+          </button>
+          <button class="export-card" id="export-json">
+            <i class="fa-solid fa-file-code color-json"></i>
+            <strong>JSON (.json)</strong>
+            <span>Raw structured data</span>
+          </button>
+          <button class="export-card" id="export-txt">
+            <i class="fa-solid fa-file-lines color-txt"></i>
+            <strong>Google Sheet TSV (.txt)</strong>
+            <span>Tab separated text</span>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-md"
+          onclick="document.getElementById('modal-export').classList.add('hidden'); document.body.style.overflow='';">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="modal-detail" class="modal-backdrop hidden">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-globe color-accent"></i> <span id="detail-modal-title">Website Details</span></h3>
+        <button class="btn-close" id="btn-close-detail"
+          onclick="document.getElementById('modal-detail').classList.add('hidden'); document.body.style.overflow='';"><i
+            class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="detail-modal-body">
+
+      </div>
+      <div class="modal-footer">
+        <button id="btn-back-detail" class="btn btn-primary btn-md"
+          onclick="document.getElementById('modal-detail').classList.add('hidden'); document.body.style.overflow='';">
+          <i class="fa-solid fa-arrow-left"></i> Back to Results Table
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Text Cell Expander Modal (Click on any cell to view big text like Google Sheets) -->
+  <div id="modal-cell-preview" class="modal-backdrop hidden">
+    <div class="modal-box modal-lg cell-preview-box">
+      <div class="modal-header cell-preview-header">
+        <div class="cell-preview-heading">
+          <i class="fa-solid fa-up-right-and-down-left-from-center color-primary cell-preview-heading-icon"></i>
+          <div>
+            <h3 id="cell-preview-title" class="cell-preview-title">Column Full Text View</h3>
+            <span id="cell-preview-subtitle" class="cell-preview-subtitle">Website URL</span>
+          </div>
+        </div>
+        <div class="cell-preview-actions">
+          <button id="btn-copy-cell-text" class="btn btn-secondary btn-sm cell-preview-copy-btn">
+            <i class="fa-solid fa-copy"></i> Copy Full Text
+          </button>
+          <button class="btn-close" id="btn-close-cell-preview" onclick="document.getElementById('modal-cell-preview').classList.add('hidden'); document.body.style.overflow='';">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body cell-preview-body">
+        <div class="cell-preview-meta-row">
+          <span id="cell-preview-meta"><i class="fa-solid fa-chart-simple"></i> Characters: 0 | Words: 0</span>
+          <span class="cell-preview-full-badge">100% Full Uncut Text</span>
+        </div>
+        <div id="cell-preview-content" class="cell-preview-content">
+        </div>
+      </div>
+      <div class="modal-footer cell-preview-footer">
+        <button class="btn btn-primary btn-md" onclick="document.getElementById('modal-cell-preview').classList.add('hidden'); document.body.style.overflow='';">
+          <i class="fa-solid fa-check"></i> Done Viewing
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="assets/app.js?v=20260814_2353"></script>
+  <script>
+    // ── Server URL Config ────────────────────────────────────────────────────
+    function getApiHost() {
+      const custom = (localStorage.getItem('lgs_api_url') || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
+      if (custom) return custom;
+      const globalCfg = (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') : '';
+      if (globalCfg) return globalCfg;
+      const h = window.location.hostname;
+      const isLocal = h === 'localhost' || h === '127.0.0.1';
+      const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(h);
+      if (isLocal) return 'http://localhost:3000';
+      if (isIp) return `http://${h}:3000`;
+      if (h.endsWith('github.io') || h.endsWith('netlify.app') || h.endsWith('vercel.app')) {
+        return (window.LGS_CONFIG && window.LGS_CONFIG.API_URL) ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '') : 'http://localhost:3000';
+      }
+      return (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null') ? ((window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || 'http://localhost:3000') : window.location.origin;
+    }
+    window.getApiHost = getApiHost;
+    const _API_HOST = getApiHost();
+    const API_BASE_AUTH = `${_API_HOST}/api/auth`;
+    // ─────────────────────────────────────────────────────────────────────────
+    let currentUserSession = null;
+    let currentUserCredits = { dailyCredits: 50, usedCreditsToday: 0, remainingCredits: 50 };
+
+    // Fetch User Status, Credits, and System Announcement on Load
+    async function syncUserStatusAndCredits() {
+      try {
+        const sessionStr = localStorage.getItem('lgs_session') || sessionStorage.getItem('lgs_session');
+        if (!sessionStr) return;
+        currentUserSession = JSON.parse(sessionStr);
+
+        const res = await fetch(`${API_BASE_AUTH}/check-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentUserSession.email, id: currentUserSession.id })
+        });
+        const data = await res.json();
+
+        if (data && (data.status === 'banned' || data.status === 'deleted' || data.status === 'inactive')) {
+          localStorage.removeItem('lgs_auth');
+          localStorage.removeItem('lgs_session');
+          localStorage.removeItem('lgs_token');
+          sessionStorage.removeItem('lgs_auth');
+          sessionStorage.removeItem('lgs_session');
+          sessionStorage.removeItem('lgs_token');
+          alert(data.message || 'Your account has been banned or removed by an administrator.');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // Render User Name & Package Badge
+        const userBadge = document.getElementById('header-user-badge');
+        if (userBadge && data.user) {
+          const pkg = (data.user.package || 'free').toUpperCase();
+          userBadge.textContent = '\u{1F464} ' + (data.user.name || currentUserSession.fullname || 'User') + ' [' + pkg + ']';
+          userBadge.style.background = pkg === 'ENTERPRISE' ? 'rgba(245,158,11,0.18)' : pkg === 'PRO' ? 'rgba(99,102,241,0.18)' : 'rgba(107,114,128,0.18)';
+        }
+
+        // Render Credit Badge & Live Progress Bar
+        if (data.user) {
+          window.currentUserCredits = {
+            dailyCredits: data.user.dailyCredits || 50,
+            usedCreditsToday: data.user.usedCreditsToday || 0,
+            remainingCredits: data.user.remainingCredits !== undefined ? data.user.remainingCredits : 50
+          };
+          updateCreditUI(window.currentUserCredits.remainingCredits, window.currentUserCredits.dailyCredits);
+        }
+
+        // Render System Announcement Banner
+        if (data.announcement) {
+          const banner = document.getElementById('system-announcement-banner');
+          const bannerText = document.getElementById('announcement-banner-text');
+          if (banner && bannerText) {
+            bannerText.textContent = data.announcement;
+            banner.style.display = 'flex';
+          }
+        }
+      } catch (e) {
+        console.error('Credit/Status Sync Error:', e);
+      }
+    }
+
+
+
+    // Language Switching System
+    const i18n = {
+      en: {
+        app_title: "EmailFinder",
+        input_heading: "1. Input Website URLs",
+        dropzone_msg: "Drag & Drop .txt, .csv, or .xlsx file here",
+        browse_btn: "Browse Files",
+        manual_urls_label: "Or Paste URLs/Domains directly:",
+        options_heading: "2. Extraction Parameters",
+        apply_param_btn: "Apply Columns & Parameters",
+        live_tracker_title: "Live Execution Progress"
+      },
+      bn: {
+        app_title: "লিড জেনারেশন",
+        input_heading: "১. ওয়েবসাইট URL প্রদান করুন",
+        dropzone_msg: ".txt, .csv, অথবা .xlsx ফাইল ড্র্যাগ এবং ড্রপ করুন",
+        browse_btn: "ফাইল সিলেক্ট করুন",
+        manual_urls_label: "অথবা সরাসরি URL/ডোমেইন পেস্ট করুন:",
+        options_heading: "২. তথ্য এক্সট্র্যাকশন প্যারামিটার",
+        apply_param_btn: "কলাম ও প্যারামিটার প্রয়োগ করুন",
+        live_tracker_title: "লাইভ অগ্রগতি ট্র্যাকার"
+      }
+    };
+    let currentLang = 'en';
+    function initLanguageSystem() {
+      const btnLang = document.getElementById('btn-lang');
+      const langLabel = document.getElementById('lang-label');
+      if (btnLang) {
+        btnLang.addEventListener('click', function () {
+          currentLang = currentLang === 'en' ? 'bn' : 'en';
+          if (langLabel) langLabel.textContent = currentLang === 'en' ? 'English' : 'বাংলা';
+          document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (i18n[currentLang] && i18n[currentLang][key]) {
+              el.textContent = i18n[currentLang][key];
+            }
+          });
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      initLanguageSystem();
+      syncUserStatusAndCredits();
+    });
+
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', function () {
+        if (confirm('Are you sure you want to logout?')) {
+          localStorage.removeItem('lgs_auth');
+          localStorage.removeItem('lgs_session');
+          localStorage.removeItem('lgs_token');
+          sessionStorage.removeItem('lgs_auth');
+          sessionStorage.removeItem('lgs_session');
+          sessionStorage.removeItem('lgs_token');
+          window.location.href = 'login.html';
+        }
+      });
+    }
+
+
+    // ── Theme System: OS Auto Sync on Load + Manual Toggle on Click ──────────
+    (function initThemeSystem() {
+
+      // Apply theme visually + update button style
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const btnTheme = document.getElementById('btn-theme');
+        if (!btnTheme) return;
+        if (theme === 'dark') {
+          // 🌙 Dark Mode — cool indigo/purple glow
+          btnTheme.innerHTML = '<i class="fa-solid fa-moon" style="color:#a78bfa;"></i>';
+          btnTheme.title = 'Dark Mode — Click for Light';
+          btnTheme.style.background = 'var(--primary-bg)';
+          btnTheme.style.border = '1px solid rgba(99,102,241,0.35)';
+          btnTheme.style.color = 'var(--primary-h)';
+          btnTheme.style.boxShadow = 'none';
+        } else {
+          // ☀️ Light Mode — warm amber/orange glow
+          btnTheme.innerHTML = '<i class="fa-solid fa-sun" style="color:#f59e0b;"></i>';
+          btnTheme.title = 'Light Mode — Click for Dark';
+          btnTheme.style.background = 'var(--amber-bg)';
+          btnTheme.style.border = '1px solid rgba(245,158,11,0.35)';
+          btnTheme.style.color = 'var(--amber)';
+          btnTheme.style.boxShadow = 'none';
+        }
+        btnTheme.style.cursor = 'pointer';
+        btnTheme.style.pointerEvents = 'auto';
+      }
+
+      // On page load: load saved preference or fall back to OS theme
+      const osTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      const currentTheme = localStorage.getItem('lgs_theme') || osTheme;
+      applyTheme(currentTheme);
+
+      // Live OS listener: auto-update if OS Dark/Light changes while page is open (if not manually set)
+      if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const onOSChange = (e) => {
+          if (!localStorage.getItem('lgs_theme')) {
+            applyTheme(e.matches ? 'dark' : 'light');
+          }
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onOSChange);
+        else if (mq.addListener) mq.addListener(onOSChange);
+      }
+
+      // Manual toggle: Dark ↔ Light, persist in localStorage
+      const btnTheme = document.getElementById('btn-theme');
+      if (btnTheme) {
+        btnTheme.addEventListener('click', function () {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          localStorage.setItem('lgs_theme', newTheme);
+          applyTheme(newTheme);
+        });
+      }
+
+    })();
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Sound Chime Toggle: persisted mute/unmute for the completion chime ────
+    // #chk-sound itself is read directly by the mining engine when a session
+    // finishes — this only makes the existing checkbox visible/clickable via
+    // a header pill and remembers the choice across visits.
+    (function initSoundToggle() {
+      const chk = document.getElementById('chk-sound');
+      const icon = document.getElementById('sound-toggle-icon');
+      const pill = document.getElementById('sound-toggle-pill');
+      if (!chk) return;
+
+      const saved = localStorage.getItem('lgs_sound_enabled');
+      chk.checked = saved === null ? true : saved === 'true';
+
+      function syncSoundUI() {
+        if (icon) icon.className = chk.checked ? 'fa-solid fa-bell' : 'fa-solid fa-bell-slash';
+        if (pill) {
+          pill.title = chk.checked ? 'Sound Chime: On (click to mute)' : 'Sound Chime: Off (click to unmute)';
+          if (chk.checked) {
+            // On — accent cyan glow, matching the app's brand accent
+            pill.style.background = 'var(--cyan-bg)';
+            pill.style.borderColor = 'rgba(6,182,212,0.35)';
+            pill.style.color = 'var(--cyan)';
+            pill.style.boxShadow = 'none';
+          } else {
+            // Muted — dimmed, no glow, so "off" reads clearly at a glance
+            pill.style.background = 'var(--bg-2)';
+            pill.style.borderColor = 'var(--border)';
+            pill.style.color = 'var(--text-3)';
+            pill.style.boxShadow = 'none';
+          }
+        }
+      }
+
+      chk.addEventListener('change', function () {
+        localStorage.setItem('lgs_sound_enabled', chk.checked ? 'true' : 'false');
+        syncSoundUI();
+      });
+
+      syncSoundUI();
+    })();
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Helper: Live Credit Progress Bar & Percentage UI ──────────────────────
+    function updateCreditUI(remaining, total) {
+      const rem = Math.max(0, parseInt(remaining, 10) || 0);
+      const tot = Math.max(1, parseInt(total, 10) || 50);
+      const pct = Math.min(100, Math.max(0, Math.round((rem / tot) * 100)));
+
+      const credLbl = document.getElementById('lbl-user-credits');
+      if (credLbl) credLbl.textContent = `Credits: ${rem} / ${tot}`;
+
+      const pctLbl = document.getElementById('lbl-user-credit-pct');
+      if (pctLbl) pctLbl.textContent = `${pct}%`;
+
+      const fill = document.getElementById('credit-progress-fill');
+      if (fill) {
+        fill.style.width = `${pct}%`;
+        fill.style.background = pct < 20
+          ? 'linear-gradient(90deg, #ef4444, #f59e0b)'
+          : pct < 50
+            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+            : 'linear-gradient(90deg, #6366f1, #06b6d4)';
+      }
+    }
+    window.updateCreditUI = updateCreditUI;
+    function showToast(msg, type = 'info', duration = 3500) {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:10px;max-width:380px;pointer-events:none;';
+        document.body.appendChild(container);
+      }
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      const bg = type === 'success' ? 'rgba(16,185,129,0.14)' : type === 'error' ? 'rgba(239,68,68,0.14)' : type === 'warning' ? 'rgba(245,158,11,0.14)' : 'rgba(99,102,241,0.14)';
+      const border = type === 'success' ? 'rgba(16,185,129,0.35)' : type === 'error' ? 'rgba(239,68,68,0.35)' : type === 'warning' ? 'rgba(245,158,11,0.35)' : 'rgba(99,102,241,0.35)';
+      const color = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#6366f1';
+      const icon = type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : type === 'warning' ? 'fa-circle-exclamation' : 'fa-circle-info';
+
+      el.style.cssText = `background:${bg};border:1px solid ${border};color:var(--text-1,#fff);backdrop-filter:blur(12px);padding:12px 16px;border-radius:10px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;pointer-events:auto;animation:toastIn 0.3s cubic-bezier(0.16,1,0.3,1);`;
+      // Icon markup is trusted (built from a fixed internal list above); the
+      // message itself may come from a backend/API response, so it's set via
+      // textContent (never innerHTML) to avoid any HTML/script injection.
+      el.innerHTML = `<i class="fa-solid ${icon}" style="color:${color};font-size:16px;flex-shrink:0;"></i> <span style="flex:1;"></span>`;
+      el.querySelector('span').textContent = msg;
+      container.appendChild(el);
+
+      setTimeout(() => {
+        el.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => el.remove(), 300);
+      }, duration);
+    }
+    // Inject Keyframes
+    const toastStyle = document.createElement('style');
+    toastStyle.textContent = `@keyframes toastIn { from { opacity:0; transform:translateY(20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } } @keyframes toastOut { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(20px) scale(0.95); } }`;
+    document.head.appendChild(toastStyle);
+
+    // ── Package Upgrade Request System ────────────────────────────────────────
+    const btnUpgrade = document.getElementById('btn-upgrade-plan');
+    if (btnUpgrade) {
+      btnUpgrade.addEventListener('click', function () {
+        let modal = document.getElementById('upgrade-plan-modal');
+        if (!modal) {
+          modal = document.createElement('div');
+          modal.id = 'upgrade-plan-modal';
+          modal.className = 'upgrade-modal-backdrop';
+          modal.innerHTML = `
+            <div class="upgrade-modal-box">
+              <div class="upgrade-modal-header">
+                <h3 class="upgrade-modal-title"><i class="fa-solid fa-bolt" style="color:#ffb347;"></i> Request Package Upgrade</h3>
+                <button class="upgrade-modal-close" onclick="document.getElementById('upgrade-plan-modal').style.display='none';"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <p class="upgrade-modal-desc">Choose a package below to submit an upgrade request to the Administrator:</p>
+              <div class="upgrade-plan-options">
+                <label class="upgrade-plan-option plan-pro">
+                  <div class="upgrade-plan-radio-row">
+                    <input type="radio" name="plan-option" value="pro" checked class="upgrade-plan-radio">
+                    <div>
+                      <strong class="upgrade-plan-name">PRO PLAN</strong>
+                      <div class="upgrade-plan-credits">1,000 Credits / Day</div>
+                    </div>
+                  </div>
+                  <span class="upgrade-plan-tag">Popular</span>
+                </label>
+                <label class="upgrade-plan-option plan-enterprise">
+                  <div class="upgrade-plan-radio-row">
+                    <input type="radio" name="plan-option" value="enterprise" class="upgrade-plan-radio">
+                    <div>
+                      <strong class="upgrade-plan-name">ENTERPRISE PLAN</strong>
+                      <div class="upgrade-plan-credits">Unlimited (999,999 Credits / Day)</div>
+                    </div>
+                  </div>
+                  <span class="upgrade-plan-tag">Unlimited</span>
+                </label>
+              </div>
+              <div class="upgrade-modal-actions">
+                <button class="upgrade-cancel-btn" onclick="document.getElementById('upgrade-plan-modal').style.display='none';">Cancel</button>
+                <button id="btn-submit-upgrade" class="upgrade-submit-btn">
+                  <i class="fa-solid fa-paper-plane"></i> Submit Request
+                </button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+
+          document.getElementById('btn-submit-upgrade').addEventListener('click', async function () {
+            if (!currentUserSession) return;
+            const selected = modal.querySelector('input[name="plan-option"]:checked')?.value || 'pro';
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+              const res = await fetch(`${API_BASE_AUTH}/upgrade-request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: currentUserSession.id, email: currentUserSession.email, requestedPackage: selected })
+              });
+              const data = await res.json();
+              modal.style.display = 'none';
+              if (data.success) {
+                showToast(data.message, 'success', 4500);
+              } else {
+                showToast(data.message || 'Failed to submit request', 'error');
+              }
+            } catch (e) {
+              modal.style.display = 'none';
+              showToast('Network error submitting upgrade request.', 'error');
+            } finally {
+              this.disabled = false;
+              this.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Request';
+            }
+          });
+        } else {
+          modal.style.display = 'flex';
+        }
+      });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── App Shell: off-canvas sidebar + section navigation ───────────────────
+    // Presentation-only wiring for the new sidebar layout. It moves the
+    // viewport around and highlights the current section; it does not touch
+    // any mining, credit, or export logic.
+    (function initAppShell() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (!sidebar) return;
+
+      function closeSidebar() {
+        sidebar.classList.remove('sidebar--open');
+        if (overlay) overlay.classList.remove('active');
+        document.querySelectorAll('[data-sidebar-toggle]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      }
+
+      document.querySelectorAll('[data-sidebar-toggle]').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const open = sidebar.classList.toggle('sidebar--open');
+          if (overlay) overlay.classList.toggle('active', open);
+          this.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      });
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+
+      // Smooth-scroll the in-page section links and keep the active one marked
+      const sectionLinks = Array.from(sidebar.querySelectorAll('.nav-link[href^="#"]'));
+
+      sectionLinks.forEach(link => {
+        link.addEventListener('click', function (e) {
+          const target = document.querySelector(this.getAttribute('href'));
+          if (!target) return;
+          e.preventDefault();
+          const top = target.getBoundingClientRect().top + window.scrollY - 90;
+          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+          sectionLinks.forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+          if (window.matchMedia('(max-width: 900px)').matches) closeSidebar();
+        });
+      });
+
+      const sections = sectionLinks
+        .map(l => document.querySelector(l.getAttribute('href')))
+        .filter(Boolean);
+
+      function syncActiveLink() {
+        let currentIndex = 0;
+        sections.forEach((sec, i) => {
+          if (sec.getBoundingClientRect().top <= 140) currentIndex = i;
+        });
+        // At the very bottom of the page the last section can never reach the
+        // 140px line, so mark it active explicitly.
+        const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+        if (atBottom) currentIndex = sections.length - 1;
+        sectionLinks.forEach((l, i) => l.classList.toggle('active', i === currentIndex));
+      }
+
+      if (sections.length) {
+        let ticking = false;
+        window.addEventListener('scroll', function () {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(function () {
+            syncActiveLink();
+            ticking = false;
+          });
+        }, { passive: true });
+        syncActiveLink();
+      }
+    })();
+    // ─────────────────────────────────────────────────────────────────────────
+  </script>
+</body>
+
+
+</html>

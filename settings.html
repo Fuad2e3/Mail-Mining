@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script>
+    // Clickjacking mitigation: break out of any frame this page is loaded into.
+    // Static hosting cannot set X-Frame-Options and CSP frame-ancestors is not
+    // honored via <meta>, so this JS guard is the only defense available here.
+    if (window.top !== window.self) {
+      window.top.location = window.self.location;
+    }
+  </script>
+  <script>
+    // Paint the saved theme before first render to avoid a flash.
+    (function () {
+      const saved = localStorage.getItem('lgs_theme');
+      const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+
+    // Same session guard the rest of the site uses.
+    if (localStorage.getItem('lgs_auth') !== 'true' && sessionStorage.getItem('lgs_auth') !== 'true') {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <script src="assets/config.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <meta name="theme-color" content="#0a0b0f" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f8f9fc" media="(prefers-color-scheme: light)">
+  <meta http-equiv="Content-Security-Policy-Report-Only" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; form-action 'self';">
+
+  <title>Settings – EmailFinder</title>
+  <meta name="description" content="Manage your EmailFinder preferences, appearance and local data.">
+  <meta name="author" content="Softece">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/ef-app.css?v=20260828">
+
+  <!-- Icons load out of band: the page is fully usable before (or without) them,
+       and EF.icons() re-runs over the document once the library arrives. -->
+  <script async src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"
+    onload="window.EF && EF.icons()"
+    onerror="var s=document.createElement('script');s.async=true;s.src='https://unpkg.com/lucide@latest/dist/umd/lucide.min.js';s.onload=function(){window.EF && EF.icons();};document.head.appendChild(s);"></script>
+</head>
+
+<body>
+
+<div class="app-shell">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Sidebar navigation">
+    <a href="dashboard.html" class="sidebar__logo">
+      <div class="sidebar__logo-icon"><i data-lucide="at-sign"></i></div>
+      <span class="sidebar__logo-name">EmailFinder</span>
+    </a>
+
+    <nav class="sidebar__nav">
+      <div class="nav-section">
+        <a href="dashboard.html"    class="nav-link"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+        <a href="finder.html"       class="nav-link"><i data-lucide="search"></i> Email Finder</a>
+        <a href="bulk-finder.html"  class="nav-link"><i data-lucide="layers"></i> Bulk Finder</a>
+        <a href="verification.html" class="nav-link"><i data-lucide="shield-check"></i> Verification</a>
+        <a href="history.html"      class="nav-link"><i data-lucide="history"></i> History</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Resources</div>
+        <a href="api.html"     class="nav-link"><i data-lucide="code-2"></i> API Documentation</a>
+        <a href="pricing.html" class="nav-link"><i data-lucide="credit-card"></i> Pricing</a>
+        <a href="app.html"     class="nav-link"><i data-lucide="globe"></i> Web Data Mining</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Account</div>
+        <a href="settings.html" class="nav-link"><i data-lucide="settings"></i> Settings</a>
+        <a href="index.html"    class="nav-link"><i data-lucide="home"></i> Home Page</a>
+      </div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div class="sidebar__user">
+        <div class="sidebar__avatar" id="ef-avatar">U</div>
+        <div class="sidebar__user-main">
+          <div class="sidebar__user-name" id="ef-user-name">User</div>
+          <span class="plan-badge" id="ef-user-plan">Free Plan</span>
+        </div>
+        <button class="sidebar__logout" data-ef-logout title="Log out" aria-label="Log out">
+          <i data-lucide="log-out"></i>
+        </button>
+      </div>
+
+      <div class="credit-box">
+        <div class="credit-box__row">
+          <span class="credit-box__label"><i data-lucide="coins"></i> <span id="ef-credit-label">50 / 50 credits</span></span>
+          <span class="credit-box__pct" id="ef-credit-pct">100%</span>
+        </div>
+        <div class="credit-box__track"><div class="credit-box__fill" id="ef-credit-fill"></div></div>
+      </div>
+
+      <a href="pricing.html" class="btn btn--primary btn--sm btn--full">
+        <i data-lucide="arrow-up-circle"></i> Upgrade plan
+      </a>
+    </div>
+  </aside>
+  <div id="sidebar-overlay"></div>
+
+  <!-- ── Main column ──────────────────────────────────────────────────── -->
+  <div class="main-content">
+    <header class="topbar">
+      <button class="hamburger" data-sidebar-toggle aria-expanded="false" aria-controls="sidebar" aria-label="Open sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="topbar__title">Settings</span>
+      <div class="topbar__actions">
+        <span class="topbar__credits" title="Credits remaining today">
+          <i data-lucide="coins"></i> <span data-ef-credits>50</span>
+        </span>
+        <button class="icon-btn theme-toggle-btn" aria-label="Toggle theme" aria-pressed="true"><i data-lucide="sun"></i></button>
+        
+      </div>
+    </header>
+
+    <main class="page-body" id="main-content">
+      <div class="announce-banner" id="ef-announcement">
+        <span class="announce-banner__text">
+          <i data-lucide="megaphone"></i>
+          <span id="ef-announcement-text"></span>
+        </span>
+        <button class="announce-banner__close" id="ef-announcement-close" aria-label="Dismiss announcement">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="page-header">
+        <h1>Settings</h1>
+        <p class="text-muted">Your account, preferences and locally stored data.</p>
+      </div>
+
+      <div class="settings-tabs" role="tablist">
+        <button class="settings-tab active" role="tab" data-tab="account"     aria-selected="true">Account</button>
+        <button class="settings-tab"        role="tab" data-tab="preferences" aria-selected="false">Preferences</button>
+        <button class="settings-tab"        role="tab" data-tab="appearance"  aria-selected="false">Appearance</button>
+        <button class="settings-tab"        role="tab" data-tab="data"        aria-selected="false">Data</button>
+      </div>
+
+      <div class="settings-panel active card" id="panel-account" style="max-width:660px;" role="tabpanel">
+        <div class="settings-section">
+          <h3>Account</h3>
+          <p class="text-sm text-muted" style="margin-bottom:1.25rem;">
+            Your profile comes from the account you signed in with. Name, email and package are managed by the administrator.
+          </p>
+          <div class="settings-row">
+            <div class="settings-row__info"><h4>Name</h4><p id="set-name">—</p></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info"><h4>Email</h4><p id="set-email">—</p></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info"><h4>Package</h4><p id="set-package">—</p></div>
+            <a href="pricing.html" class="btn btn--outline btn--sm"><i data-lucide="arrow-up-circle"></i> Upgrade</a>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info"><h4>Daily credits</h4><p id="set-credits">—</p></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info"><h4>Sign out</h4><p>End this session on this device.</p></div>
+            <button class="btn btn--outline btn--sm" style="color:var(--red);border-color:rgba(239,68,68,.4);" data-ef-logout>
+              <i data-lucide="log-out"></i> Log out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-panel card" id="panel-preferences" style="max-width:660px;" role="tabpanel">
+        <div class="settings-section">
+          <h3>Search preferences</h3>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Save searches to history</h4>
+              <p>Keep every finder search in this browser's history.</p>
+            </div>
+            <label class="toggle-switch" aria-label="Toggle search history">
+              <input type="checkbox" id="pref-history" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Auto-copy best match</h4>
+              <p>Copy the top result to your clipboard as soon as a search finishes.</p>
+            </div>
+            <label class="toggle-switch" aria-label="Toggle auto-copy">
+              <input type="checkbox" id="pref-autocopy">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Show confidence percentages</h4>
+              <p>Display the confidence bar and score in result tables.</p>
+            </div>
+            <label class="toggle-switch" aria-label="Toggle confidence display">
+              <input type="checkbox" id="pref-confidence" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-panel card" id="panel-appearance" style="max-width:660px;" role="tabpanel">
+        <div class="settings-section">
+          <h3>Appearance</h3>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Dark mode</h4>
+              <p>Switch between the dark and light interface. Shared with the rest of the site.</p>
+            </div>
+            <label class="toggle-switch" aria-label="Toggle dark mode">
+              <input type="checkbox" id="theme-toggle-settings" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-panel card" id="panel-data" style="max-width:660px;" role="tabpanel">
+        <div class="settings-section">
+          <h3>Local data</h3>
+          <p class="text-sm text-muted" style="margin-bottom:1.25rem;">
+            History and preferences live in this browser's localStorage. Clearing them does not affect your account.
+          </p>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Search history</h4>
+              <p><span id="set-history-count">0</span> saved searches.</p>
+            </div>
+            <button class="btn btn--outline btn--sm" style="color:var(--red);border-color:rgba(239,68,68,.4);" id="btn-clear-history">
+              <i data-lucide="trash-2"></i> Clear
+            </button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Reset preferences</h4>
+              <p>Restore the default preference values.</p>
+            </div>
+            <button class="btn btn--outline btn--sm" id="btn-reset-prefs"><i data-lucide="rotate-ccw"></i> Reset</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__info">
+              <h4>Export history</h4>
+              <p>Download every saved search as a CSV file.</p>
+            </div>
+            <button class="btn btn--outline btn--sm" id="btn-export-history"><i data-lucide="download"></i> Export</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/ef/data.js?v=20260828"></script>
+<script src="assets/ef/core.js?v=20260828"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // ── Tabs ──────────────────────────────────────────────────────────────
+    document.querySelectorAll('.settings-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.settings-tab').forEach(function (t) {
+          t.classList.remove('active'); t.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.settings-panel').forEach(function (p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        var panel = document.getElementById('panel-' + tab.dataset.tab);
+        if (panel) panel.classList.add('active');
+      });
+    });
+
+    // ── Preferences ───────────────────────────────────────────────────────
+    var toggles = [
+      ['pref-history',    'history',    true],
+      ['pref-autocopy',   'autocopy',   false],
+      ['pref-confidence', 'confidence', true]
+    ];
+    toggles.forEach(function (entry) {
+      var el = document.getElementById(entry[0]);
+      if (!el) return;
+      el.checked = EF.Prefs.get(entry[1], entry[2]) === true;
+      el.addEventListener('change', function () {
+        EF.Prefs.set(entry[1], el.checked);
+        EF.Toast.show('Preference saved', 'success', 1800);
+      });
+    });
+
+    // ── Appearance ────────────────────────────────────────────────────────
+    var themeToggle = document.getElementById('theme-toggle-settings');
+    if (themeToggle) {
+      themeToggle.checked = EF.Theme.get() === 'dark';
+      themeToggle.addEventListener('change', function () {
+        EF.Theme.set(themeToggle.checked ? 'dark' : 'light');
+      });
+    }
+
+    // ── Data ──────────────────────────────────────────────────────────────
+    function refreshCount() {
+      var el = document.getElementById('set-history-count');
+      if (el) el.textContent = EF.History.load().length.toLocaleString();
+    }
+    refreshCount();
+
+    var clearBtn = document.getElementById('btn-clear-history');
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      if (!confirm('Clear all search history? This cannot be undone.')) return;
+      EF.History.clear(); refreshCount();
+      EF.Toast.show('History cleared', 'info');
+    });
+
+    var resetBtn = document.getElementById('btn-reset-prefs');
+    if (resetBtn) resetBtn.addEventListener('click', function () {
+      if (!confirm('Reset all preferences to their defaults?')) return;
+      EF.Prefs.reset();
+      EF.Toast.show('Preferences reset', 'info');
+      setTimeout(function () { location.reload(); }, 600);
+    });
+
+    var exportBtn = document.getElementById('btn-export-history');
+    if (exportBtn) exportBtn.addEventListener('click', function () {
+      EF.exportCSV(EF.History.load().map(function (e) {
+        return {
+          first_name: e.firstName, last_name: e.lastName, company: e.company,
+          domain: e.domain, email: e.email, status: e.status,
+          confidence: e.confidence, date: e.date
+        };
+      }), 'emailfinder-history.csv');
+    });
+
+    // ── Account details, once the live sync lands ─────────────────────────
+    function renderAccount() {
+      var a = EF.account;
+      var set = function (id, value) { var el = document.getElementById(id); if (el) el.textContent = value; };
+      set('set-name', a.name || '—');
+      set('set-email', a.email || '—');
+      set('set-package', (a.package || 'free').toUpperCase());
+      set('set-credits', a.remainingCredits + ' of ' + a.dailyCredits + ' remaining today');
+    }
+    renderAccount();
+    document.addEventListener('ef:account', renderAccount);
+  });
+</script>
+</body>
+
+</html>
