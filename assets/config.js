@@ -1,4 +1,4 @@
 window.LGS_CONFIG = {
-  API_URL: "https://minus-barrier-bottles-sacred.trycloudflare.com",
+  API_URL: "https://illustrated-brook-renewable-low.trycloudflare.com",
   SCRAPER_URL: "http://localhost:4000"
 };
