@@ -35,15 +35,15 @@ const EF = (() => {
     const h = window.location.hostname;
     const isLocal = h === 'localhost' || h === '127.0.0.1';
     const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(h);
-    if (isLocal) return 'http://localhost:3000';
-    if (isIp) return `http://${h}:3000`;
+    if (isLocal) return 'http://localhost:5000';
+    if (isIp) return `http://${h}:5000`;
     if (h.endsWith('github.io') || h.endsWith('netlify.app') || h.endsWith('vercel.app')) {
       return (window.LGS_CONFIG && window.LGS_CONFIG.API_URL)
         ? window.LGS_CONFIG.API_URL.trim().replace(/\/+$/, '')
-        : 'http://localhost:3000';
+        : 'http://localhost:5000';
     }
     return (window.location.protocol === 'file:' || !window.location.origin || window.location.origin === 'null')
-      ? ((window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || 'http://localhost:3000')
+      ? ((window.LGS_CONFIG && window.LGS_CONFIG.API_URL) || 'http://localhost:5000')
       : window.location.origin;
   }
   const authApi = () => `${getApiHost()}/api/auth`;
